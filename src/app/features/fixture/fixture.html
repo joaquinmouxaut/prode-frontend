@@ -1,0 +1,144 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-blue">Fixture</p>
+      <h2 class="font-display text-3xl tracking-wide text-white">Partidos</h2>
+      <p class="mt-1 max-w-xl text-sm text-prode-muted">
+        Cargá tus goles local y visitante. Guardá cada partido cuando esté listo.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="refresh()"
+      class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
+    >
+      <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
+      Actualizar
+    </button>
+  </div>
+
+  @if (auth.needsInitialSetup(auth.currentUser())) {
+    <div
+      class="flex flex-col gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <span class="inline-flex items-center gap-2">
+        <lucide-icon name="shield" class="text-amber-300" [size]="18" />
+        Completá tu campeón y goleador en <strong class="text-white">Prode inicial</strong>.
+      </span>
+      <a
+        routerLink="/setup"
+        class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-prode-gold"
+      >
+        Ir
+        <lucide-icon name="chevron-right" [size]="14" />
+      </a>
+    </div>
+  }
+
+  @if (rowError()) {
+    <p class="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+      {{ rowError() }}
+    </p>
+  }
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-20 text-prode-muted">
+      <lucide-icon name="loader-2" class="animate-spin text-prode-accent" [size]="36" />
+      <p class="text-sm">Cargando fixture…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="card-sport border-rose-500/20 p-6 text-center text-rose-200">
+      {{ loadError() }}
+    </div>
+  } @else if (groups().length === 0) {
+    <div class="card-sport p-8 text-center text-prode-muted">
+      No hay partidos cargados todavía en el backend.
+    </div>
+  } @else {
+    <div class="space-y-10">
+      @for (g of groups(); track trackDay($index, g)) {
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <lucide-icon name="calendar" class="text-prode-blue" [size]="18" />
+            <h3 class="font-display text-xl capitalize tracking-wide text-white">{{ g.heading }}</h3>
+          </div>
+          @for (sec of g.sections; track trackSection($index, sec)) {
+            <div class="space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wider text-prode-muted">
+                {{ sec.phaseLabel }}
+              </p>
+              <ul class="space-y-3">
+                @for (m of sec.matches; track trackMatch($index, m)) {
+                  <li class="card-sport overflow-hidden">
+                    <div
+                      class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+                    >
+                      <div class="min-w-0 flex-1 space-y-1">
+                        <div class="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+                          <span class="truncate">{{ m.homeTeam }}</span>
+                          <span class="text-prode-muted">vs</span>
+                          <span class="truncate">{{ m.awayTeam }}</span>
+                        </div>
+                        <p class="text-xs text-prode-muted">
+                          {{ formatWhen(m.date) }}
+                        </p>
+                        @if (m.homeGoals !== null && m.awayGoals !== null) {
+                          <p class="inline-flex items-center gap-2 text-xs font-bold text-prode-accent">
+                            <span class="rounded-full bg-prode-accent/15 px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                              >Resultado</span
+                            >
+                            {{ m.homeGoals }} — {{ m.awayGoals }}
+                          </p>
+                        }
+                      </div>
+
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+                          <label class="block sm:w-24">
+                            <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                              >Local</span
+                            >
+                            <input
+                              type="number"
+                              min="0"
+                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                              [ngModel]="draft()[m.id]?.home ?? 0"
+                              (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
+                            />
+                          </label>
+                          <label class="block sm:w-24">
+                            <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                              >Visitante</span
+                            >
+                            <input
+                              type="number"
+                              min="0"
+                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                              [ngModel]="draft()[m.id]?.away ?? 0"
+                              (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
+                            />
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          (click)="savePrediction(m)"
+                          [disabled]="savingId() === m.id"
+                          class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-emerald-900/25 hover:brightness-110 disabled:opacity-50"
+                        >
+                          @if (savingId() === m.id) {
+                            <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                          }
+                          {{ predictionByMatchId().get(m.id) ? 'Actualizar' : 'Guardar' }}
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

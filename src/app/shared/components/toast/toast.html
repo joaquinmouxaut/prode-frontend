@@ -1,0 +1,18 @@
+@if (toast(); as t) {
+  <div
+    class="fixed bottom-4 right-4 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-slide-in z-[9999] max-w-sm"
+    [class.bg-emerald-500]="t.type === 'success'"
+    [class.bg-red-500]="t.type === 'error'"
+    [class.bg-blue-500]="t.type === 'info'"
+  >
+    <span class="flex-shrink-0 text-lg">{{ icon }}</span>
+    <span class="flex-1 text-sm font-medium text-white">{{ t.message }}</span>
+    <button
+      class="flex-shrink-0 bg-transparent border-0 text-lg cursor-pointer opacity-70 hover:opacity-100 transition-opacity text-white"
+      (click)="dismiss()"
+      aria-label="Cerrar"
+    >
+      &times;
+    </button>
+  </div>
+}

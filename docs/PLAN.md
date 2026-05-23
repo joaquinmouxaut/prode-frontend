@@ -1,6 +1,6 @@
 # Plan de trabajo — Prode World Cup 2026
 
-> **Hoy:** Viernes 22 de mayo de 2026
+> **Última sesión:** Sábado 23 de mayo de 2026 — **Fase 0 cerrada** ✅
 > **Deadline blando (deploy):** Viernes 5 de junio de 2026
 > **Deadline duro (inicio Mundial):** Jueves 11 de junio de 2026
 > **Equipo:** 1 dev (solo)
@@ -72,6 +72,8 @@ gantt
   - [x] Primer `sdd-explore`: **"Modelo de fases y puntaje de cara al Mundial 2026"**.
 
 **Salida esperada:** workspace abierto desde Cursor mostrando ambos repos, contexto SDD persistido en engram, primer explore guardado.
+
+**Git (front):** commit `84f501d` en `master` (`chore(fase-0): cimientos SDD, ESLint y plan Mundial 2026`). Rama de trabajo `cursor/fase-0-sdd-foundation` apunta al mismo commit (opcional borrarla).
 
 ### Fase 1 — Alineamiento front ↔ back (Dom 24 → Mié 27, 4 días)
 
@@ -216,11 +218,23 @@ Estos quedan para **v1.1+** después del 11 de junio.
 
 ---
 
-## 7. Próximas acciones inmediatas (qué hacemos ya)
+## 7. Próximas acciones (sesión Dom 24 — Fase 1)
 
-1. ~~Confirmar las decisiones de la sección 1.~~ ✅
-2. ~~Crear `prode.code-workspace`~~ ✅ — abrir en Cursor: `../prode.code-workspace`
-3. ~~`sdd-init` en modo `engram`~~ ✅
-4. ~~Primer `sdd-explore` fases/puntaje~~ ✅ → Engram `sdd/explore/phase-scoring-world-cup-2026`
+1. Abrir workspace `../prode.code-workspace` (front + back).
+2. Recuperar contexto Engram: `project: prode-frontend`, topic `prode/session-latest`.
+3. Leer explore previo: topic `sdd/explore/phase-scoring-world-cup-2026`.
+4. Iniciar change **`phase-model-alignment`**: `sdd-propose` → spec/design/tasks → apply en **back** (Prisma enum 8 fases + `PointsService` + tests Jest).
+5. *(Fuera de carpeta git front)* Workspace file: `c:\Users\Joaquín\Documents\GitHub\prode.code-workspace`.
 
-> Fase 0 cerrada. Siguiente: Fase 1 change `phase-model-alignment` (Dom 24). En modo engram, el cierre es `sdd-archive` + resumen en memoria (sin `openspec/changes/archive/`).
+> En modo engram, al cerrar un change usar `sdd-archive` + resumen en memoria (sin `openspec/changes/archive/`).
+
+---
+
+## 8. Bitácora de sesiones
+
+| Fecha | Foco | Hecho | Git / Engram |
+|-------|------|-------|----------------|
+| **Vie 22-may** | Kickoff WC 2026 | Análisis, `PLAN.md`, decisiones globales, fix Engram/Notepad | `session/2026-05-22-prode-kickoff` |
+| **Sáb 23-may** | **Fase 0 completa** | `prode.code-workspace`, `git init` front, `sdd-init` engram, `AGENTS.md`, `.atl/skill-registry.md`, ESLint (`ng lint` OK), explore fases/puntaje, merge a `master` | Commit `84f501d` · `prode/session-latest` · `sdd-init/prode-frontend` · `sdd/explore/phase-scoring-world-cup-2026` |
+
+**Hallazgo clave (carry-over Fase 1):** front tiene 8 fases (`match-phase.ts`); Prisma tiene 5 (`KNOCKOUT` genérico). `leaderboard.service` aún agrega puntos en cliente — eliminar en change `leaderboard-from-backend` (Lun 25).

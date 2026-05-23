@@ -4,9 +4,11 @@ Workspace unificado: `prode-frontend` (Angular) + `prode-backend` (NestJS). Abri
 
 ## Plan y memoria
 
-- Roadmap: `docs/PLAN.md`
+- Roadmap y bitácora: `docs/PLAN.md` (§8 sesiones)
 - SDD en modo **engram** (sin `openspec/` en git). Recuperar contexto: `mem_search` / `mem_context` con `project: prode-frontend`, topic `prode/session-latest`
 - Artefactos SDD: `sdd/{change}/explore|proposal|spec|design|tasks`, init en `sdd-init/prode-frontend`
+- Explore Fase 0 (fases/puntaje): Engram `sdd/explore/phase-scoring-world-cup-2026`
+- **Estado (23-may-2026):** Fase 0 cerrada · `master` @ `84f501d` · siguiente change `phase-model-alignment`
 
 ## Stack
 

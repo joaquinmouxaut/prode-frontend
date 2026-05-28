@@ -1,6 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,12 +28,20 @@ export class Auth implements OnInit {
 
   protected readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  protected readonly registerForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-  });
+  protected readonly registerForm = this.fb.nonNullable.group(
+    {
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    {
+      validators: [passwordMatchValidator],
+    },
+  );
 
   setMode(m: 'login' | 'register'): void {
     this.mode.set(m);
@@ -41,10 +55,15 @@ export class Auth implements OnInit {
     }
     this.busy.set(true);
     this.error.set(null);
-    this.auth.loginByEmail(this.loginForm.controls.email.value).subscribe({
+    const { email, password } = this.loginForm.getRawValue();
+    this.auth.login({ email, password }).subscribe({
       next: (user) => this.afterAuth(user),
-      error: (e: Error) => {
-        this.error.set(e.message);
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.error.set('Email o contraseña incorrectos.');
+        } else {
+          this.error.set('No pudimos iniciar sesión. Probá de nuevo.');
+        }
         this.busy.set(false);
       },
       complete: () => this.busy.set(false),
@@ -58,8 +77,8 @@ export class Auth implements OnInit {
     }
     this.busy.set(true);
     this.error.set(null);
-    const { name, email } = this.registerForm.getRawValue();
-    this.auth.register({ name, email }).subscribe({
+    const { name, email, password } = this.registerForm.getRawValue();
+    this.auth.register({ name, email, password }).subscribe({
       next: (user) => this.afterAuth(user),
       error: (err: HttpErrorResponse) => {
         if (err.status === 409) {
@@ -86,4 +105,13 @@ export class Auth implements OnInit {
       void this.router.navigateByUrl('/fixtures');
     }
   }
+}
+
+function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
+  const password = group.get('password')?.value;
+  const confirm = group.get('confirmPassword')?.value;
+  if (!password || !confirm) {
+    return null;
+  }
+  return password === confirm ? null : { passwordMismatch: true };
 }

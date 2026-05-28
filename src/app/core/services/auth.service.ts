@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
-import type { CreateUserDto, UpdateUserDto, User } from '../models/user.model';
+import type { AuthResponse, LoginDto, RegisterDto } from '../models/auth.model';
+import type { UpdateUserDto, User } from '../models/user.model';
 
-const STORAGE_USER_ID = 'prode_user_id';
+const STORAGE_ACCESS_TOKEN = 'prode_access_token';
+const STORAGE_USER = 'prode_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -15,50 +17,36 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
 
   hydrateFromStorage(): Observable<User | null> {
-    const raw = localStorage.getItem(STORAGE_USER_ID);
-    if (!raw) {
-      this.currentUser.set(null);
+    const token = this.getStoredToken();
+    const storedUser = this.getStoredUser();
+    if (!token || !storedUser) {
+      this.clearSession();
       return of(null);
     }
-    const id = Number(raw);
-    if (!Number.isFinite(id)) {
-      localStorage.removeItem(STORAGE_USER_ID);
-      this.currentUser.set(null);
-      return of(null);
-    }
-    return this.http.get<User>(`${this.baseUrl}/users/${id}`).pipe(
-      tap((u) => this.currentUser.set(u)),
-      catchError(() => {
-        localStorage.removeItem(STORAGE_USER_ID);
-        this.currentUser.set(null);
-        return of(null);
+
+    this.currentUser.set(storedUser);
+    return of(storedUser).pipe(
+      map((user) => {
+        if (this.isTokenExpired(token)) {
+          this.clearSession();
+          return null;
+        }
+        return user;
       }),
     );
   }
 
-  register(dto: CreateUserDto): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/users`, dto).pipe(
-      tap((user) => {
-        localStorage.setItem(STORAGE_USER_ID, String(user.id));
-        this.currentUser.set(user);
-      }),
+  register(dto: RegisterDto): Observable<User> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, dto).pipe(
+      tap((response) => this.setSession(response)),
+      map((response) => response.user),
     );
   }
 
-  /** Login básico: busca por email en la lista de usuarios (sin endpoint dedicado en el backend). */
-  loginByEmail(email: string): Observable<User> {
-    const normalized = email.trim().toLowerCase();
-    return this.http.get<User[]>(`${this.baseUrl}/users`).pipe(
-      switchMap((users) => {
-        const found = users.find((u) => u.email.toLowerCase() === normalized);
-        return found
-          ? of(found)
-          : throwError(() => new Error('No encontramos una cuenta con ese email.'));
-      }),
-      tap((user) => {
-        localStorage.setItem(STORAGE_USER_ID, String(user.id));
-        this.currentUser.set(user);
-      }),
+  login(dto: LoginDto): Observable<User> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, dto).pipe(
+      tap((response) => this.setSession(response)),
+      map((response) => response.user),
     );
   }
 
@@ -66,6 +54,7 @@ export class AuthService {
     return this.http.patch<User>(`${this.baseUrl}/users/${id}`, dto).pipe(
       tap((user) => {
         if (this.currentUser()?.id === user.id) {
+          localStorage.setItem(STORAGE_USER, JSON.stringify(user));
           this.currentUser.set(user);
         }
       }),
@@ -73,15 +62,15 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(STORAGE_USER_ID);
-    this.currentUser.set(null);
+    this.clearSession();
+  }
+
+  getStoredToken(): string | null {
+    return localStorage.getItem(STORAGE_ACCESS_TOKEN);
   }
 
   getStoredUserId(): number | null {
-    const raw = localStorage.getItem(STORAGE_USER_ID);
-    if (!raw) return null;
-    const id = Number(raw);
-    return Number.isFinite(id) ? id : null;
+    return this.currentUser()?.id ?? this.getStoredUser()?.id ?? null;
   }
 
   /** Indica si falta completar campeón / goleador antes del torneo. */
@@ -92,5 +81,43 @@ export class AuthService {
     const missingChampion = !user.championPick?.trim();
     const missingScorer = !user.topScorerPick?.trim();
     return missingChampion || missingScorer;
+  }
+
+  private setSession(response: AuthResponse): void {
+    localStorage.setItem(STORAGE_ACCESS_TOKEN, response.accessToken);
+    localStorage.setItem(STORAGE_USER, JSON.stringify(response.user));
+    this.currentUser.set(response.user);
+  }
+
+  private clearSession(): void {
+    localStorage.removeItem(STORAGE_ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_USER);
+    this.currentUser.set(null);
+  }
+
+  private getStoredUser(): User | null {
+    const raw = localStorage.getItem(STORAGE_USER);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw) as User;
+    } catch {
+      localStorage.removeItem(STORAGE_USER);
+      this.currentUser.set(null);
+      return null;
+    }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])) as { exp?: number };
+      if (!payload.exp) {
+        return false;
+      }
+      return payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
   }
 }

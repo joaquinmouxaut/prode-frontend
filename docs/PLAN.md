@@ -1,6 +1,6 @@
 # Plan de trabajo — Prode World Cup 2026
 
-> **Última sesión:** Sábado 23 de mayo de 2026 — **Fase 0 cerrada** ✅
+> **Última sesión:** Martes 26 de mayo de 2026 — **Fase 1 parcial: fases + leaderboard cerrados** ✅
 > **Deadline blando (deploy):** Viernes 5 de junio de 2026
 > **Deadline duro (inicio Mundial):** Jueves 11 de junio de 2026
 > **Equipo:** 1 dev (solo)
@@ -79,21 +79,23 @@ gantt
 
 **Objetivo:** Que el frontend hable el mismo idioma que el backend; eliminar lógica duplicada; auth real.
 
+**Estado 26-may:** `phase-model-alignment` y `leaderboard-from-backend` cerrados y subidos en ambos repos. Queda `auth-jwt` para la próxima sesión.
+
 - **Dom 24 — Change `phase-model-alignment`**
-  - Decidir enum definitivo (sugerencia: mantener los 8 valores del front, expandir el back).
-  - Migración Prisma + actualizar `PointsService` con multiplicadores por fase fina.
-  - Tests unitarios del cálculo de puntos por cada fase (es código crítico).
-  - Frontend deja de calcular nada; consume el campo `points`.
+  - [x] Decidir enum definitivo: mantener los 8 valores del front, expandir el back.
+  - [x] Migración Prisma + actualizar `PointsService` con multiplicadores por fase fina.
+  - [x] Tests unitarios del cálculo de puntos por cada fase (es código crítico).
+  - [x] Frontend deja de calcular nada; consume el campo `points`.
 - **Lun 25 — Change `leaderboard-from-backend`**
-  - Endpoint `GET /leaderboard` con orden + tie-breakers.
-  - Frontend deja de hacer `forkJoin` y agregar; consume el endpoint.
-  - Test del servicio del leaderboard (back).
+  - [x] Endpoint `GET /leaderboard` con orden + tie-breakers.
+  - [x] Frontend deja de hacer `forkJoin` y agregar; consume el endpoint.
+  - [x] Test del servicio del leaderboard (back).
 - **Mar 26 + Mié 27 — Change `auth-jwt` (2 días)**
-  - Modelo: agregar `passwordHash` y `role: 'USER' | 'ADMIN'` a `User`. Migración Prisma.
-  - Back día 1 (Mar): hashing con argon2/bcrypt, `POST /auth/register`, `POST /auth/login` (devuelve `{ user, accessToken }`), guard JWT con `@nestjs/jwt`, decorator `@CurrentUser()`, proteger rutas mutativas, `JWT_SECRET` por env.
-  - Back día 1 (Mar): tests de `AuthService` (registro, login válido/inválido, token firma OK).
-  - Front día 2 (Mié): formularios con campo password + confirm password en registro, validaciones, `AuthService.login/register` reescritos contra el endpoint real, almacenar JWT en localStorage, interceptor que adjunta `Authorization: Bearer`, manejo de `401` (logout automático), tests de servicios críticos.
-  - Decisión documentada: sin "olvidé mi contraseña" para v1.0 (queda en v1.1; con 50 usuarios, hacer reset manual).
+  - [ ] Modelo: agregar `passwordHash` y `role: 'USER' | 'ADMIN'` a `User`. Migración Prisma.
+  - [ ] Back día 1: hashing con argon2/bcrypt, `POST /auth/register`, `POST /auth/login` (devuelve `{ user, accessToken }`), guard JWT con `@nestjs/jwt`, decorator `@CurrentUser()`, proteger rutas mutativas, `JWT_SECRET` por env.
+  - [ ] Back día 1: tests de `AuthService` (registro, login válido/inválido, token firma OK).
+  - [ ] Front día 2: formularios con campo password + confirm password en registro, validaciones, `AuthService.login/register` reescritos contra el endpoint real, almacenar JWT en localStorage, interceptor que adjunta `Authorization: Bearer`, manejo de `401` (logout automático), tests de servicios críticos.
+  - [ ] Decisión documentada: sin "olvidé mi contraseña" para v1.0 (queda en v1.1; con 50 usuarios, hacer reset manual).
 
 **Salida esperada:** features `/fixtures` y `/leaderboard` consumen datos reales del back. Auth con JWT funcional end-to-end.
 
@@ -218,13 +220,36 @@ Estos quedan para **v1.1+** después del 11 de junio.
 
 ---
 
-## 7. Próximas acciones (sesión Dom 24 — Fase 1)
+## 7. Próximas acciones (sesión Mié 27 — Fase 1 / `auth-jwt`)
 
 1. Abrir workspace `../prode.code-workspace` (front + back).
 2. Recuperar contexto Engram: `project: prode-frontend`, topic `prode/session-latest`.
-3. Leer explore previo: topic `sdd/explore/phase-scoring-world-cup-2026`.
-4. Iniciar change **`phase-model-alignment`**: `sdd-propose` → spec/design/tasks → apply en **back** (Prisma enum 8 fases + `PointsService` + tests Jest).
-5. *(Fuera de carpeta git front)* Workspace file: `c:\Users\Joaquín\Documents\GitHub\prode.code-workspace`.
+3. Confirmar estado git: ambos repos en `master` trackeando `origin/master`.
+4. Iniciar change **`auth-jwt`**: `sdd-propose` → spec/design/tasks → apply.
+5. Implementar primero el backend: Prisma `passwordHash` + `role`, endpoints `POST /auth/register` y `POST /auth/login`, JWT guard, `@CurrentUser()`, protección de rutas mutativas y tests de `AuthService`.
+6. Continuar con frontend auth: formularios con password, storage de JWT, interceptor Bearer y manejo de `401`.
+
+### Prompt de arranque sugerido
+
+```text
+Continuamos Prode WC 2026 — Fase 1 / change auth-jwt.
+Abrí ../prode.code-workspace (front + back), leé docs/PLAN.md (§7 y §8) y recuperá contexto con mem_search/mem_context:
+project: prode-frontend, topic: prode/session-latest.
+
+Estado actual:
+- prode-frontend master -> origin/master
+- prode-backend master -> origin/master
+- phase-model-alignment cerrado: Phase de Prisma alineado a 8 fases, PointsService con multiplicadores, test points.service.spec.ts OK (9/9)
+- leaderboard-from-backend cerrado: GET /leaderboard en back, front consume endpoint, test leaderboard.service.spec.ts OK (2/2)
+
+Arrancá el change auth-jwt:
+1. SDD engram: sdd-propose -> spec -> design -> tasks -> apply.
+2. Backend primero: passwordHash + role USER/ADMIN en User, migración Prisma, register/login con JWT, guard JWT, @CurrentUser(), proteger rutas mutativas, JWT_SECRET por env.
+3. Tests Jest de AuthService: registro, login válido/inválido, firma/retorno de accessToken.
+4. Después frontend: formularios password/confirmación, AuthService real, localStorage JWT, interceptor Bearer, logout en 401.
+
+No push salvo que lo pida.
+```
 
 > En modo engram, al cerrar un change usar `sdd-archive` + resumen en memoria (sin `openspec/changes/archive/`).
 
@@ -236,5 +261,6 @@ Estos quedan para **v1.1+** después del 11 de junio.
 |-------|------|-------|----------------|
 | **Vie 22-may** | Kickoff WC 2026 | Análisis, `PLAN.md`, decisiones globales, fix Engram/Notepad | `session/2026-05-22-prode-kickoff` |
 | **Sáb 23-may** | **Fase 0 completa** | `prode.code-workspace`, `git init` front, `sdd-init` engram, `AGENTS.md`, `.atl/skill-registry.md`, ESLint (`ng lint` OK), explore fases/puntaje, merge a `master` | Commit `84f501d` · `prode/session-latest` · `sdd-init/prode-frontend` · `sdd/explore/phase-scoring-world-cup-2026` |
+| **Mar 26-may** | **Fase 1 parcial** | `phase-model-alignment` cerrado (8 fases Prisma + `PointsService` + test 9/9) y `leaderboard-from-backend` cerrado (`GET /leaderboard`, front sin agregación local, test 2/2). Ambos repos subidos a GitHub. | Front `4319d36` · Back `master -> origin/master` · `prode/session-latest` · `sdd/phase-model-alignment/apply-progress` · `sdd/leaderboard-from-backend/apply-progress` |
 
-**Hallazgo clave (carry-over Fase 1):** front tiene 8 fases (`match-phase.ts`); Prisma tiene 5 (`KNOCKOUT` genérico). `leaderboard.service` aún agrega puntos en cliente — eliminar en change `leaderboard-from-backend` (Lun 25).
+**Carry-over Fase 1:** iniciar `auth-jwt`. Mantener backend como fuente de verdad, y no agregar reset de contraseña en v1.0.

@@ -63,6 +63,18 @@
               placeholder="vos@equipo.com"
             />
           </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase tracking-wider text-prode-muted"
+              >Contraseña</span
+            >
+            <input
+              type="password"
+              formControlName="password"
+              autocomplete="current-password"
+              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              placeholder="Tu contraseña"
+            />
+          </label>
           <button
             type="submit"
             [disabled]="busy()"
@@ -102,6 +114,33 @@
               placeholder="vos@equipo.com"
             />
           </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase tracking-wider text-prode-muted"
+              >Contraseña</span
+            >
+            <input
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              placeholder="Al menos 6 caracteres"
+            />
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase tracking-wider text-prode-muted"
+              >Confirmar contraseña</span
+            >
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              placeholder="Repetí la contraseña"
+            />
+          </label>
+          @if (registerForm.hasError('passwordMismatch') && registerForm.touched) {
+            <p class="text-xs text-rose-300">Las contraseñas no coinciden.</p>
+          }
           <button
             type="submit"
             [disabled]="busy()"

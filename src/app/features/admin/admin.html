@@ -1,4 +1,74 @@
 <section class="space-y-6">
+  <div class="card-sport space-y-4 p-4 sm:p-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.25em] text-emerald-300">
+          Fixture automation
+        </p>
+        <h3 class="font-display text-xl tracking-wide text-white">Import y sincronización</h3>
+        <p class="mt-1 text-xs text-prode-muted">
+          Polling cada 15 minutos durante partidos en curso. Fuera de ventana activa no se consulta.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          (click)="importFixture()"
+          [disabled]="importingFixture()"
+          class="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
+        >
+          @if (importingFixture()) {
+            <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
+          }
+          Importar fixture
+        </button>
+        <button
+          type="button"
+          (click)="runSyncNow()"
+          [disabled]="syncingNow()"
+          class="inline-flex items-center justify-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-sky-100 hover:bg-sky-500/25 disabled:opacity-50"
+        >
+          @if (syncingNow()) {
+            <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
+          }
+          Sync ahora
+        </button>
+        <button
+          type="button"
+          (click)="refreshSyncStatus()"
+          [disabled]="loadingSyncStatus()"
+          class="inline-flex items-center justify-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white disabled:opacity-50"
+        >
+          @if (loadingSyncStatus()) {
+            <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
+          }
+          Estado sync
+        </button>
+      </div>
+    </div>
+
+    @if (syncStatus(); as status) {
+      <div class="grid gap-2 text-xs text-prode-muted sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+          <p class="font-semibold text-white">Polling</p>
+          <p>{{ status.enabled ? 'Activo' : 'Inactivo' }} · {{ status.frequencyMinutes }} min</p>
+        </div>
+        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+          <p class="font-semibold text-white">Uso de cuota</p>
+          <p>{{ status.requestsUsedToday }} / {{ status.maxRequestsPerDay }}</p>
+        </div>
+        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+          <p class="font-semibold text-white">Partidos activos</p>
+          <p>{{ status.activeMatches }}</p>
+        </div>
+        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+          <p class="font-semibold text-white">Último resultado</p>
+          <p class="truncate">{{ status.lastPollResult || 'Sin ejecuciones' }}</p>
+        </div>
+      </div>
+    }
+  </div>
+
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
@@ -76,17 +146,32 @@
                   />
                 </label>
               </div>
-              <button
-                type="button"
-                (click)="saveResult(m)"
-                [disabled]="savingId() === m.id"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
-              >
-                @if (savingId() === m.id) {
-                  <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  (click)="saveResult(m)"
+                  [disabled]="savingId() === m.id"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
+                >
+                  @if (savingId() === m.id) {
+                    <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                  }
+                  Cargar resultado
+                </button>
+                @if (m.manualOverride) {
+                  <button
+                    type="button"
+                    (click)="unlockSync(m)"
+                    [disabled]="unlockingId() === m.id"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-muted hover:text-white disabled:opacity-50"
+                  >
+                    @if (unlockingId() === m.id) {
+                      <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                    }
+                    Reanudar sync
+                  </button>
                 }
-                Cargar resultado
-              </button>
+              </div>
             </div>
           </div>
         </li>

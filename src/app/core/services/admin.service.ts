@@ -12,6 +12,34 @@ export interface SetMatchResultResponse {
   matchId: number;
   recalculatedPredictions: number;
   recalculatedUsers: number;
+  skipped?: string;
+}
+
+export interface FixtureImportResponse {
+  importedMatches: number;
+  createdMatches: number;
+  updatedMatches: number;
+  skippedUnknownPhase: number;
+  skippedManualOverride: number;
+  discoveredTeams: number;
+}
+
+export interface FixtureSyncStatusResponse {
+  enabled: boolean;
+  frequencyMinutes: number;
+  maxRequestsPerDay: number;
+  requestsUsedToday: number;
+  lastPollAt: string | null;
+  lastPollResult: string | null;
+  activeMatches: number;
+}
+
+export interface FixtureSyncRunResponse {
+  trigger: 'manual' | 'scheduled';
+  skipped?: string;
+  syncedMatches: number;
+  scoreChanges?: number;
+  skippedByOverride?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,5 +52,24 @@ export class AdminService {
       `${this.baseUrl}/admin/matches/${matchId}/result`,
       dto,
     );
+  }
+
+  unlockMatchSync(matchId: number): Observable<{ matchId: number }> {
+    return this.http.post<{ matchId: number }>(
+      `${this.baseUrl}/admin/matches/${matchId}/unlock-sync`,
+      {},
+    );
+  }
+
+  importFixture(): Observable<FixtureImportResponse> {
+    return this.http.post<FixtureImportResponse>(`${this.baseUrl}/admin/fixture/import`, {});
+  }
+
+  getFixtureSyncStatus(): Observable<FixtureSyncStatusResponse> {
+    return this.http.get<FixtureSyncStatusResponse>(`${this.baseUrl}/admin/sync/status`);
+  }
+
+  runFixtureSyncNow(): Observable<FixtureSyncRunResponse> {
+    return this.http.post<FixtureSyncRunResponse>(`${this.baseUrl}/admin/sync/run`, {});
   }
 }

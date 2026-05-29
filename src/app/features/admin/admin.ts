@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
-import { AdminService } from '../../core/services/admin.service';
+import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
 import { MATCH_PHASE_LABELS } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import { PredictionsService } from '../../core/services/predictions.service';
@@ -29,6 +29,11 @@ export class Admin {
   protected readonly matches = signal<Match[]>([]);
   protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
   protected readonly savingId = signal<number | null>(null);
+  protected readonly unlockingId = signal<number | null>(null);
+  protected readonly importingFixture = signal(false);
+  protected readonly syncingNow = signal(false);
+  protected readonly syncStatus = signal<FixtureSyncStatusResponse | null>(null);
+  protected readonly loadingSyncStatus = signal(false);
 
   protected readonly pendingMatches = computed(() =>
     this.matches()
@@ -38,6 +43,7 @@ export class Admin {
 
   constructor() {
     this.refresh();
+    this.refreshSyncStatus();
   }
 
   refresh(): void {
@@ -58,6 +64,19 @@ export class Admin {
       error: () => {
         this.loadError.set('No pudimos cargar los partidos. ¿Está corriendo el backend?');
         this.loading.set(false);
+      },
+    });
+  }
+
+  refreshSyncStatus(): void {
+    this.loadingSyncStatus.set(true);
+    this.adminApi.getFixtureSyncStatus().subscribe({
+      next: (status) => {
+        this.syncStatus.set(status);
+        this.loadingSyncStatus.set(false);
+      },
+      error: () => {
+        this.loadingSyncStatus.set(false);
       },
     });
   }
@@ -109,12 +128,67 @@ export class Admin {
           return next;
         });
         this.savingId.set(null);
+        this.refreshSyncStatus();
         this.toast.success(
           `Resultado guardado. Recalculadas ${res.recalculatedPredictions} predicciones.`,
         );
       },
       error: () => {
         this.savingId.set(null);
+      },
+    });
+  }
+
+  importFixture(): void {
+    this.importingFixture.set(true);
+    this.adminApi.importFixture().subscribe({
+      next: (result) => {
+        this.importingFixture.set(false);
+        this.refresh();
+        this.refreshSyncStatus();
+        this.toast.success(
+          `Fixture importado: ${result.importedMatches} partidos (${result.createdMatches} nuevos).`,
+        );
+      },
+      error: () => {
+        this.importingFixture.set(false);
+      },
+    });
+  }
+
+  runSyncNow(): void {
+    this.syncingNow.set(true);
+    this.adminApi.runFixtureSyncNow().subscribe({
+      next: (result) => {
+        this.syncingNow.set(false);
+        this.refresh();
+        this.refreshSyncStatus();
+        if (result.skipped) {
+          this.toast.success(`Sync no ejecutado: ${result.skipped}.`);
+          return;
+        }
+        this.toast.success(
+          `Sync OK: ${result.syncedMatches} partidos revisados, ${result.scoreChanges ?? 0} con cambios.`,
+        );
+      },
+      error: () => {
+        this.syncingNow.set(false);
+      },
+    });
+  }
+
+  unlockSync(match: Match): void {
+    this.unlockingId.set(match.id);
+    this.adminApi.unlockMatchSync(match.id).subscribe({
+      next: () => {
+        this.unlockingId.set(null);
+        this.matches.update((list) =>
+          list.map((m) => (m.id === match.id ? { ...m, manualOverride: false } : m)),
+        );
+        this.toast.success('Override manual desactivado para este partido.');
+      },
+      error: () => {
+        this.unlockingId.set(null);
       },
     });
   }

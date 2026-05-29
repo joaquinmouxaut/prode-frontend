@@ -37,6 +37,15 @@
         >
           Prode inicial
         </a>
+        @if (auth.isAdmin()) {
+          <a
+            routerLink="/admin"
+            routerLinkActive="bg-prode-elevated text-white ring-1 ring-amber-400/40"
+            class="rounded-full px-3 py-2 text-sm font-medium text-prode-muted transition hover:text-white"
+          >
+            Admin
+          </a>
+        }
       </div>
       <button
         type="button"
@@ -57,7 +66,7 @@
     class="fixed bottom-0 left-0 right-0 z-40 border-t border-prode-border bg-prode-surface/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg md:hidden"
     aria-label="Principal"
   >
-    <div class="grid grid-cols-3 gap-1 px-2 py-2">
+    <div class="grid gap-1 px-2 py-2" [class.grid-cols-3]="!auth.isAdmin()" [class.grid-cols-4]="auth.isAdmin()">
       <a
         routerLink="/fixtures"
         routerLinkActive="text-prode-accent"
@@ -83,6 +92,16 @@
         <lucide-icon name="shield" [size]="22" />
         Prode
       </a>
+      @if (auth.isAdmin()) {
+        <a
+          routerLink="/admin"
+          routerLinkActive="text-amber-400"
+          class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+        >
+          <lucide-icon name="settings" [size]="22" />
+          Admin
+        </a>
+      }
     </div>
   </nav>
 </div>

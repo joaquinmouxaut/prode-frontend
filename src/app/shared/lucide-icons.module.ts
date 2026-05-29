@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import {
   Calendar,
+  CheckCircle,
   ChevronRight,
   Goal,
   LayoutGrid,
@@ -9,6 +10,7 @@ import {
   LogOut,
   LucideAngularModule,
   Medal,
+  Settings,
   Shield,
   Trophy,
   UserPlus,
@@ -19,6 +21,7 @@ import {
   imports: [
     LucideAngularModule.pick({
       Calendar,
+      CheckCircle,
       ChevronRight,
       Goal,
       LayoutGrid,
@@ -26,6 +29,7 @@ import {
       LogIn,
       LogOut,
       Medal,
+      Settings,
       Shield,
       Trophy,
       UserPlus,

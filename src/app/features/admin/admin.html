@@ -1,0 +1,96 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
+      <h2 class="font-display text-3xl tracking-wide text-white">Resultados</h2>
+      <p class="mt-1 max-w-xl text-sm text-prode-muted">
+        Cargá el marcador oficial de partidos pendientes. El backend recalcula puntos y ranking.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="refresh()"
+      class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
+    >
+      <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
+      Actualizar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-20 text-prode-muted">
+      <lucide-icon name="loader-2" class="animate-spin text-prode-accent" [size]="36" />
+      <p class="text-sm">Cargando partidos…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="card-sport border-rose-500/20 p-6 text-center text-rose-200">
+      {{ loadError() }}
+    </div>
+  } @else if (pendingMatches().length === 0) {
+    <div class="card-sport p-8 text-center text-prode-muted">
+      <lucide-icon name="check-circle" class="mx-auto mb-3 text-prode-accent" [size]="32" />
+      No hay partidos pendientes de resultado.
+    </div>
+  } @else {
+    <ul class="space-y-3">
+      @for (m of pendingMatches(); track trackMatch($index, m)) {
+        <li class="card-sport overflow-hidden">
+          <div
+            class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          >
+            <div class="min-w-0 flex-1 space-y-1">
+              <div class="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+                <span class="truncate">{{ m.homeTeam }}</span>
+                <span class="text-prode-muted">vs</span>
+                <span class="truncate">{{ m.awayTeam }}</span>
+              </div>
+              <p class="text-xs text-prode-muted">
+                {{ formatWhen(m.date) }} · {{ MATCH_PHASE_LABELS[m.phase] }}
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+                <label class="block sm:w-24">
+                  <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                    >Local</span
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2"
+                    [ngModel]="draft()[m.id]?.home ?? 0"
+                    (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
+                  />
+                </label>
+                <label class="block sm:w-24">
+                  <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                    >Visitante</span
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2"
+                    [ngModel]="draft()[m.id]?.away ?? 0"
+                    (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
+                  />
+                </label>
+              </div>
+              <button
+                type="button"
+                (click)="saveResult(m)"
+                [disabled]="savingId() === m.id"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
+              >
+                @if (savingId() === m.id) {
+                  <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                }
+                Cargar resultado
+              </button>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

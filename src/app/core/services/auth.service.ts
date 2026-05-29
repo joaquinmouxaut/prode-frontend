@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, map, of, tap } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
-import type { AuthResponse, LoginDto, RegisterDto } from '../models/auth.model';
+import type { AuthResponse, JwtTokenPayload, LoginDto, RegisterDto } from '../models/auth.model';
+import type { UserRole } from '../models/user.model';
 import type { UpdateUserDto, User } from '../models/user.model';
 
 const STORAGE_ACCESS_TOKEN = 'prode_access_token';
@@ -15,6 +16,7 @@ export class AuthService {
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
+  readonly isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
 
   hydrateFromStorage(): Observable<User | null> {
     const token = this.getStoredToken();
@@ -24,8 +26,9 @@ export class AuthService {
       return of(null);
     }
 
-    this.currentUser.set(storedUser);
-    return of(storedUser).pipe(
+    const userWithRole = this.ensureUserRole(storedUser, token);
+    this.currentUser.set(userWithRole);
+    return of(userWithRole).pipe(
       map((user) => {
         if (this.isTokenExpired(token)) {
           this.clearSession();
@@ -106,6 +109,26 @@ export class AuthService {
       localStorage.removeItem(STORAGE_USER);
       this.currentUser.set(null);
       return null;
+    }
+  }
+
+  private ensureUserRole(user: User, token: string): User {
+    if (user.role) {
+      return user;
+    }
+    const role = this.getRoleFromToken(token);
+    if (!role) {
+      return user;
+    }
+    return { ...user, role };
+  }
+
+  private getRoleFromToken(token: string): UserRole | undefined {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])) as JwtTokenPayload;
+      return payload.role;
+    } catch {
+      return undefined;
     }
   }
 

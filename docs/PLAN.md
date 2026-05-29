@@ -1,6 +1,6 @@
 # Plan de trabajo — Prode World Cup 2026
 
-> **Última sesión:** Martes 26 de mayo de 2026 — **Fase 1 parcial: fases + leaderboard cerrados** ✅
+> **Última sesión:** Viernes 29 de mayo de 2026 — **Fase 2: `admin-ui` cerrado** ✅ (siguiente: `fixture-automation`)
 > **Deadline blando (deploy):** Viernes 5 de junio de 2026
 > **Deadline duro (inicio Mundial):** Jueves 11 de junio de 2026
 > **Equipo:** 1 dev (solo)
@@ -220,33 +220,44 @@ Estos quedan para **v1.1+** después del 11 de junio.
 
 ---
 
-## 7. Próximas acciones (sesión Mié 27 — Fase 1 / `auth-jwt`)
+## 7. Próximas acciones (próxima sesión — Fase 2 / `fixture-automation`)
+
+> **Cambio de alcance:** el fixture deja de cargarse a mano. Se incorpora una nueva funcionalidad no prevista en el plan original: **importación automática del fixture** desde una API pública de fútbol y **seguimiento de resultados en vivo (o casi)** que dispara el recálculo de puntaje, conservando siempre el override manual del admin.
 
 1. Abrir workspace `../prode.code-workspace` (front + back).
-2. Recuperar contexto Engram: `project: prode-frontend`, topic `prode/session-latest`.
-3. Confirmar estado git: ambos repos en `master` trackeando `origin/master`.
-4. Iniciar change **`auth-jwt`**: `sdd-propose` → spec/design/tasks → apply.
-5. Implementar primero el backend: Prisma `passwordHash` + `role`, endpoints `POST /auth/register` y `POST /auth/login`, JWT guard, `@CurrentUser()`, protección de rutas mutativas y tests de `AuthService`.
-6. Continuar con frontend auth: formularios con password, storage de JWT, interceptor Bearer y manejo de `401`.
+2. Recuperar contexto Engram: `project: prode-frontend`, topic `prode/session-latest` y `prode/next-fixture-automation`.
+3. Confirmar estado git: ambos repos en `master` trackeando `origin/master` (auth-jwt + admin-ui ya pusheados al cerrar la sesión anterior).
+4. **Planificar primero** (no implementar de una): hacer la búsqueda web de la API y comparar opciones antes de proponer.
+5. Iniciar change **`fixture-automation`** con SDD engram: `sdd-explore` (API + arquitectura de polling) → `sdd-propose` → spec/design/tasks → apply.
+
+### Requisitos de la nueva funcionalidad (para la planificación)
+
+- **Búsqueda web** de una API pública de fútbol que sea **gratis, sencilla y con cobertura del Mundial 2026**. Candidatas a evaluar (validar cuota/cobertura en la sesión): `football-data.org` (free tier), `TheSportsDB` (free), `API-Football` (RapidAPI free tier). Criterios: límite de requests del free tier, si expone fixtures + estado del partido (en juego/finalizado) + marcador en vivo, formato de fechas/UTC, y mapeo a nuestras 8 fases.
+- **Importación de fixture** previa al torneo: script/endpoint admin que traiga los 48 equipos y los partidos, mapeando a `Match` (homeTeam, awayTeam, date UTC-3, phase). Reemplaza el seed manual de `world-cup-fixture`.
+- **Polling de resultados en vivo**: durante un partido, el backend consulta la API cada *N* segundos/minutos hasta que el partido esté marcado como **finalizado**. Ante un **cambio de marcador**, dispara el recálculo de puntaje de cada predicción de ese partido (fase + total), reutilizando `PointsService` y la lógica de `AdminService.setMatchResultAndRecalculate`.
+- **Override manual** del admin siempre disponible (UI actual de `/admin`) por si la API falla o trae datos erróneos; decidir precedencia (¿manual “congela” el partido frente al poller?).
+- **Decisiones a tomar en planificación**: scheduler (`@nestjs/schedule` / cron vs intervalo), de dónde sale el calendario de qué partidos pollear, idempotencia del recálculo, manejo de rate limits y errores de la API, almacenamiento del `externalId` del partido para el matcheo.
 
 ### Prompt de arranque sugerido
 
 ```text
-Continuamos Prode WC 2026 — Fase 1 / change auth-jwt.
+Continuamos Prode WC 2026 — Fase 2 / change fixture-automation.
 Abrí ../prode.code-workspace (front + back), leé docs/PLAN.md (§7 y §8) y recuperá contexto con mem_search/mem_context:
-project: prode-frontend, topic: prode/session-latest.
+project: prode-frontend, topics: prode/session-latest y prode/next-fixture-automation.
 
 Estado actual:
-- prode-frontend master -> origin/master
-- prode-backend master -> origin/master
-- phase-model-alignment cerrado: Phase de Prisma alineado a 8 fases, PointsService con multiplicadores, test points.service.spec.ts OK (9/9)
-- leaderboard-from-backend cerrado: GET /leaderboard en back, front consume endpoint, test leaderboard.service.spec.ts OK (2/2)
+- prode-frontend master -> origin/master ; prode-backend master -> origin/master
+- Fase 1 cerrada (phase-model-alignment, leaderboard-from-backend, auth-jwt) y Fase 2 admin-ui cerrada (ruta /admin con guard ADMIN, PATCH /admin/matches/:id/result con recálculo).
 
-Arrancá el change auth-jwt:
-1. SDD engram: sdd-propose -> spec -> design -> tasks -> apply.
-2. Backend primero: passwordHash + role USER/ADMIN en User, migración Prisma, register/login con JWT, guard JWT, @CurrentUser(), proteger rutas mutativas, JWT_SECRET por env.
-3. Tests Jest de AuthService: registro, login válido/inválido, firma/retorno de accessToken.
-4. Después frontend: formularios password/confirmación, AuthService real, localStorage JWT, interceptor Bearer, logout en 401.
+Quiero PLANIFICAR esta etapa antes de implementar:
+1. Hacé una búsqueda web de una API pública de fútbol gratis, sencilla y con cobertura del Mundial 2026 (evaluá football-data.org, TheSportsDB, API-Football). Compará free tier, cobertura de fixtures + estado del partido + marcador en vivo, y mapeo a nuestras 8 fases.
+2. Con eso, arrancá SDD engram: sdd-explore -> sdd-propose -> spec -> design -> tasks. (Implementación recién después.)
+
+Objetivo de la funcionalidad:
+- Importar automáticamente el fixture (48 equipos + partidos) en vez de cargarlo a mano.
+- Durante cada partido, el backend pollea el resultado cada cierto tiempo hasta que figure como finalizado; ante un cambio de marcador, recalcula el puntaje de cada predicción de ese partido (fase + total) reutilizando PointsService.
+- Mantener SIEMPRE el override manual del admin (UI /admin) ante cualquier eventualidad.
+- Definir scheduler, rate limits/errores, externalId para matchear partidos e idempotencia del recálculo.
 
 No push salvo que lo pida.
 ```
@@ -262,5 +273,6 @@ No push salvo que lo pida.
 | **Vie 22-may** | Kickoff WC 2026 | Análisis, `PLAN.md`, decisiones globales, fix Engram/Notepad | `session/2026-05-22-prode-kickoff` |
 | **Sáb 23-may** | **Fase 0 completa** | `prode.code-workspace`, `git init` front, `sdd-init` engram, `AGENTS.md`, `.atl/skill-registry.md`, ESLint (`ng lint` OK), explore fases/puntaje, merge a `master` | Commit `84f501d` · `prode/session-latest` · `sdd-init/prode-frontend` · `sdd/explore/phase-scoring-world-cup-2026` |
 | **Mar 26-may** | **Fase 1 parcial** | `phase-model-alignment` cerrado (8 fases Prisma + `PointsService` + test 9/9) y `leaderboard-from-backend` cerrado (`GET /leaderboard`, front sin agregación local, test 2/2). Ambos repos subidos a GitHub. | Front `4319d36` · Back `master -> origin/master` · `prode/session-latest` · `sdd/phase-model-alignment/apply-progress` · `sdd/leaderboard-from-backend/apply-progress` |
+| **Vie 29-may** | **Fase 2 — `admin-ui`** | `admin-ui` implementado y verificado (smoke manual OK): ruta `/admin` con `adminGuard`, `AdminService` → `PATCH /admin/matches/:id/result`, UI de partidos pendientes, nav condicional ADMIN, `User.role` + hidratación desde JWT. `ng test` 11/11, `ng lint` OK. **Hallazgo:** `auth-jwt` (Fase 1) y `admin-ui` estaban **sin commitear** pese a nota previa; se commitean y pushean al cerrar esta sesión. Backend deja de versionar `dist/`. | `sdd/admin-ui/{proposal,spec,design,tasks,apply-progress,verify,archive-report}` · `prode/session-latest` · `prode/next-fixture-automation` |
 
-**Carry-over Fase 1:** iniciar `auth-jwt`. Mantener backend como fuente de verdad, y no agregar reset de contraseña en v1.0.
+**Carry-over Fase 2:** iniciar `fixture-automation` — **planificar primero** (búsqueda web de API pública gratis) y recién después implementar import automático de fixture + polling de resultados en vivo con recálculo, manteniendo override manual del admin. Backend sigue siendo fuente de verdad del puntaje.

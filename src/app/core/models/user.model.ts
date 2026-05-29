@@ -1,8 +1,11 @@
+export type UserRole = 'USER' | 'ADMIN';
+
 /** Usuario alineado con el modelo Prisma `User`. */
 export interface User {
   id: number;
   name: string;
   email: string;
+  role?: UserRole;
   championPick?: string | null;
   topScorerPick?: string | null;
 }

@@ -22,6 +22,7 @@ export interface FixtureImportResponse {
   skippedUnknownPhase: number;
   skippedManualOverride: number;
   discoveredTeams: number;
+  error?: 'missing_api_key';
 }
 
 export interface FixtureSyncStatusResponse {

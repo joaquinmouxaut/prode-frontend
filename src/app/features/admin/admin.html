@@ -74,7 +74,10 @@
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
       <h2 class="font-display text-3xl tracking-wide text-white">Resultados</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
-        Cargá el marcador oficial de partidos pendientes. El backend recalcula puntos y ranking.
+        Cargá o corregí el marcador oficial. El backend recalcula puntos y ranking en cada guardado.
+        @if (pendingCount() > 0) {
+          <span class="text-amber-200/90">{{ pendingCount() }} pendiente(s).</span>
+        }
       </p>
     </div>
     <button
@@ -96,14 +99,14 @@
     <div class="card-sport border-rose-500/20 p-6 text-center text-rose-200">
       {{ loadError() }}
     </div>
-  } @else if (pendingMatches().length === 0) {
+  } @else if (resultMatches().length === 0) {
     <div class="card-sport p-8 text-center text-prode-muted">
-      <lucide-icon name="check-circle" class="mx-auto mb-3 text-prode-accent" [size]="32" />
-      No hay partidos pendientes de resultado.
+      <lucide-icon name="calendar" class="mx-auto mb-3 text-prode-accent" [size]="32" />
+      No hay partidos cargados. Importá el fixture o actualizá la lista.
     </div>
   } @else {
     <ul class="space-y-3">
-      @for (m of pendingMatches(); track trackMatch($index, m)) {
+      @for (m of resultMatches(); track trackMatch($index, m)) {
         <li class="card-sport overflow-hidden">
           <div
             class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
@@ -117,6 +120,25 @@
               <p class="text-xs text-prode-muted">
                 {{ formatWhen(m.date) }} · {{ MATCH_PHASE_LABELS[m.phase] }}
               </p>
+              <div class="flex flex-wrap gap-2 pt-1">
+                @if (isMatchPending(m)) {
+                  <span
+                    class="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
+                    >Pendiente</span
+                  >
+                } @else {
+                  <span
+                    class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                    >Con resultado</span
+                  >
+                }
+                @if (m.manualOverride) {
+                  <span
+                    class="rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-200"
+                    >Override manual</span
+                  >
+                }
+              </div>
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -156,7 +178,11 @@
                   @if (savingId() === m.id) {
                     <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
                   }
-                  Cargar resultado
+                  @if (isMatchPending(m)) {
+                    Cargar resultado
+                  } @else {
+                    Actualizar resultado
+                  }
                 </button>
                 @if (m.manualOverride) {
                   <button

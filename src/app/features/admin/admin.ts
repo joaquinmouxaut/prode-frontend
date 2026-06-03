@@ -11,6 +11,13 @@ function isMatchPending(match: Match): boolean {
   return match.homeGoals == null || match.awayGoals == null;
 }
 
+function draftGoalsForMatch(match: Match): { home: number; away: number } {
+  return {
+    home: match.homeGoals ?? 0,
+    away: match.awayGoals ?? 0,
+  };
+}
+
 @Component({
   selector: 'app-admin',
   imports: [FormsModule, AppLucideIconsModule],
@@ -35,11 +42,17 @@ export class Admin {
   protected readonly syncStatus = signal<FixtureSyncStatusResponse | null>(null);
   protected readonly loadingSyncStatus = signal(false);
 
-  protected readonly pendingMatches = computed(() =>
-    this.matches()
-      .filter(isMatchPending)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+  protected readonly resultMatches = computed(() =>
+    [...this.matches()].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    ),
   );
+
+  protected readonly pendingCount = computed(
+    () => this.matches().filter(isMatchPending).length,
+  );
+
+  protected readonly isMatchPending = isMatchPending;
 
   constructor() {
     this.refresh();
@@ -54,9 +67,7 @@ export class Admin {
         this.matches.set(matches);
         const draft: Record<number, { home: number; away: number }> = {};
         for (const m of matches) {
-          if (isMatchPending(m)) {
-            draft[m.id] = { home: 0, away: 0 };
-          }
+          draft[m.id] = draftGoalsForMatch(m);
         }
         this.draft.set(draft);
         this.loading.set(false);
@@ -120,13 +131,22 @@ export class Admin {
     this.adminApi.setMatchResult(match.id, { homeGoals: d.home, awayGoals: d.away }).subscribe({
       next: (res) => {
         this.matches.update((list) =>
-          list.map((m) => (m.id === match.id ? { ...m, homeGoals: d.home, awayGoals: d.away } : m)),
+          list.map((m) =>
+            m.id === match.id
+              ? {
+                  ...m,
+                  homeGoals: d.home,
+                  awayGoals: d.away,
+                  manualOverride: true,
+                  resultSource: 'ADMIN',
+                }
+              : m,
+          ),
         );
-        this.draft.update((current) => {
-          const next = { ...current };
-          delete next[match.id];
-          return next;
-        });
+        this.draft.update((current) => ({
+          ...current,
+          [match.id]: { home: d.home, away: d.away },
+        }));
         this.savingId.set(null);
         this.refreshSyncStatus();
         this.toast.success(
@@ -144,8 +164,14 @@ export class Admin {
     this.adminApi.importFixture().subscribe({
       next: (result) => {
         this.importingFixture.set(false);
-        this.refresh();
         this.refreshSyncStatus();
+        if (result.error === 'missing_api_key') {
+          this.toast.error(
+            'Falta FOOTBALL_DATA_API_TOKEN en el backend (.env). Ver guía de pruebas.',
+          );
+          return;
+        }
+        this.refresh();
         this.toast.success(
           `Fixture importado: ${result.importedMatches} partidos (${result.createdMatches} nuevos).`,
         );

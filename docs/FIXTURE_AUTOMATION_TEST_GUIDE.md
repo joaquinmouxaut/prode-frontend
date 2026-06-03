@@ -1,5 +1,7 @@
 # Guía de pruebas — Fixture Automation (Fase 2)
 
+> Huecos y mejoras detectadas durante las pruebas: anotalas en `[docs/PENDIENTES.md](./PENDIENTES.md)`.
+
 Esta guía valida de punta a punta la funcionalidad `fixture-automation`:
 
 - importación automática del fixture,
@@ -46,7 +48,7 @@ Verificar al menos:
 
 - `DATABASE_URL`
 - `JWT_SECRET`
-- `FOOTBALL_API_KEY`
+- `FOOTBALL_DATA_API_TOKEN`
 - `FIXTURE_POLL_ENABLED=true`
 - `FIXTURE_POLL_MINUTES=15`
 - `FOOTBALL_API_MAX_REQUESTS_PER_DAY=80` (recomendado para dejar buffer)
@@ -54,7 +56,9 @@ Verificar al menos:
 Opcional:
 
 - `FIXTURE_POLL_TICKER_SECONDS=60`
-- `FOOTBALL_API_BASE_URL=https://v3.football.api-sports.io`
+- `FOOTBALL_DATA_BASE_URL=https://api.football-data.org/v4`
+- `FOOTBALL_DATA_COMPETITION_CODE=WC`
+- `FOOTBALL_DATA_SEASON=2026`
 
 ### DB y migraciones
 
@@ -83,7 +87,7 @@ Resultado esperado:
 
 ## 4) Casos de prueba funcionales
 
-## Caso A — Importación inicial de fixture
+## Caso A — Importación inicial de fixture OK
 
 1. Ir a `/admin`.
 2. Click en `Importar fixture`.
@@ -102,7 +106,7 @@ Resultado esperado:
 
 ---
 
-## Caso B — Idempotencia del import
+## Caso B — Idempotencia del import OK
 
 1. Ejecutar `Importar fixture` dos veces seguidas.
 
@@ -117,7 +121,7 @@ Resultado esperado:
 
 ---
 
-## Caso C — Sync manual de resultados
+## Caso C — Sync manual de resultados OK
 
 1. Click en `Sync ahora`.
 2. Revisar resultado en toast y bloque de estado.
@@ -134,7 +138,7 @@ Resultado esperado:
 
 ---
 
-## Caso D — Recalculo por cambio de marcador
+## Caso D — Recalculo por cambio de marcador OK
 
 1. Elegir partido con predicciones cargadas.
 2. Cargar resultado manual desde `/admin`.
@@ -151,7 +155,7 @@ Resultado esperado:
 
 ---
 
-## Caso E — Override manual prevalece sobre API
+## Caso E — Override manual prevalece sobre API (No Aplica)
 
 1. Cargar resultado manual para un partido (esto activa override).
 2. Ejecutar `Sync ahora`.
@@ -167,7 +171,7 @@ Resultado esperado:
 
 ---
 
-## Caso F — Reanudar sync en partido overrideado
+## Caso F — Reanudar sync en partido overrideado (No Aplica)
 
 1. En partido con override, click `Reanudar sync`.
 2. Ejecutar `Sync ahora`.
@@ -183,7 +187,7 @@ Resultado esperado:
 
 ---
 
-## Caso G — Presupuesto y frecuencia de requests
+## Caso G — Presupuesto y frecuencia de requests (Diseñar prueba con partidos de otras ligas para probar antes del comienzo del mundial).
 
 1. Observar estado de sync durante un período de partidos.
 2. Verificar que no hay consultas fuera de ventana activa.
@@ -221,14 +225,14 @@ Resultado esperado:
 
 ## 5) Checklist de regresión rápida (viernes/sábado)
 
-- [ ] Login admin OK.
-- [ ] `/admin` carga sin errores.
-- [ ] Import fixture OK (sin duplicados).
-- [ ] Sync manual OK.
-- [ ] Override manual preservado.
-- [ ] Reanudar sync funciona.
-- [ ] Leaderboard consistente tras cambios.
-- [ ] Cuota de requests bajo control.
+- Login admin OK.
+- `/admin` carga sin errores.
+- Import fixture OK (sin duplicados).
+- Sync manual OK.
+- Override manual preservado.
+- Reanudar sync funciona.
+- Leaderboard consistente tras cambios.
+- Cuota de requests bajo control.
 
 ---
 
@@ -253,7 +257,8 @@ Consultar en `Prediction` y `User`:
 
 ### `missing_api_key`
 
-- Falta `FOOTBALL_API_KEY` o está inválida.
+- Falta `FOOTBALL_DATA_API_TOKEN` en `.env` del backend o está vacía/inválida.
+- Reiniciar `npm run start:dev` después de editar `.env`.
 
 ### `daily_budget_exhausted`
 

@@ -9,6 +9,11 @@ import { PredictionsService } from '../../core/services/predictions.service';
 import { MATCH_PHASE_LABELS, type MatchPhase } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
+import {
+  formatMatchScore,
+  hasScoreableResult,
+  isMatchStarted,
+} from '../../core/utils/match-lifecycle';
 
 interface FixtureSection {
   phase: MatchPhase;
@@ -38,12 +43,17 @@ export class Fixture {
   protected readonly loadError = signal<string | null>(null);
   protected readonly matches = signal<Match[]>([]);
   protected readonly predictionByMatchId = signal<Map<number, Prediction>>(new Map());
+  protected readonly visiblePredictions = signal<Prediction[]>([]);
   /** Borrador local: matchId -> goles */
   protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
   protected readonly savingId = signal<number | null>(null);
   protected readonly rowError = signal<string | null>(null);
 
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
+
+  protected readonly isMatchStarted = isMatchStarted;
+  protected readonly hasScoreableResult = hasScoreableResult;
+  protected readonly formatMatchScore = formatMatchScore;
 
   constructor() {
     this.refresh();
@@ -59,16 +69,17 @@ export class Fixture {
     this.loadError.set(null);
     forkJoin({
       matches: this.predictionsApi.getMatches(),
-      predictions: this.predictionsApi.getPredictions({ userId: user.id }),
+      predictions: this.predictionsApi.getPredictions(),
     }).subscribe({
       next: ({ matches, predictions }) => {
         const sorted = [...matches].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
         this.matches.set(sorted);
+        this.visiblePredictions.set(predictions);
         const map = new Map<number, Prediction>();
         const draft: Record<number, { home: number; away: number }> = {};
-        for (const p of predictions) {
+        for (const p of predictions.filter((item) => item.userId === user.id)) {
           map.set(p.matchId, p);
           draft[p.matchId] = { home: p.homeGoals, away: p.awayGoals };
         }
@@ -130,7 +141,10 @@ export class Fixture {
 
   savePrediction(match: Match): void {
     const user = this.auth.currentUser();
-    if (!user) return;
+    if (!user || isMatchStarted(match)) {
+      this.rowError.set('Este partido ya comenzó: la predicción quedó bloqueada.');
+      return;
+    }
     const d = this.draft()[match.id];
     if (!d) return;
     this.rowError.set(null);
@@ -156,12 +170,29 @@ export class Fixture {
       error: (err: HttpErrorResponse) => {
         this.savingId.set(null);
         if (err.status === 409) {
-          this.rowError.set('Ya tenés una predicción para este partido. Recargá la página.');
+          const message = typeof err.error?.message === 'string' ? err.error.message : '';
+          if (message.includes('locked after kickoff')) {
+            this.rowError.set('Este partido ya comenzó: la predicción quedó bloqueada.');
+          } else {
+            this.rowError.set('Ya tenés una predicción para este partido. Recargá la página.');
+          }
         } else {
           this.rowError.set('Error al guardar. Reintentá.');
         }
       },
     });
+  }
+
+  otherPredictionsForMatch(match: Match): Prediction[] {
+    const user = this.auth.currentUser();
+    if (!user || !isMatchStarted(match)) {
+      return [];
+    }
+
+    return this.visiblePredictions().filter(
+      (prediction) =>
+        prediction.matchId === match.id && prediction.userId !== user.id && prediction.user,
+    );
   }
 
   private buildGroups(matches: Match[]): FixtureDayGroup[] {

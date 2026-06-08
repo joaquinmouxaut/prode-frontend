@@ -3,56 +3,87 @@
     <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-accent">Antes del pitazo inicial</p>
     <h2 class="font-display text-3xl tracking-wide text-white">Tu prode inicial</h2>
     <p class="max-w-xl text-sm text-prode-muted">
-      Elegí campeón y goleador. Podés cambiarlos desde acá mientras el torneo no haya comenzado.
+      Elegí campeón y goleador. Cada acierto suma <strong class="text-prode-gold">50 pts</strong>. Podés cambiarlos
+      hasta que arranque el <strong class="text-white">primer partido</strong> del torneo.
     </p>
   </header>
 
-  <div class="card-sport max-w-xl p-5 md:p-6">
-    @if (error()) {
-      <p class="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
-        {{ error() }}
-      </p>
-    }
+  @if (loadingStatus()) {
+    <div class="card-sport max-w-xl p-6 text-center text-prode-muted">
+      <lucide-icon name="loader-2" class="mx-auto animate-spin text-prode-accent" [size]="28" />
+      <p class="mt-3 text-sm">Verificando estado del torneo…</p>
+    </div>
+  } @else if (picksLocked()) {
+    <div class="card-sport max-w-xl space-y-4 p-5 md:p-6">
+      <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+        <p class="font-semibold text-white">Prode inicial bloqueado</p>
+        <p class="mt-1">
+          El torneo ya comenzó
+          @if (firstMatchDate()) {
+            (primer partido: {{ formatFirstMatchDate(firstMatchDate()) }}).
+          }
+          Tus picks quedaron fijados.
+        </p>
+      </div>
+      <dl class="grid gap-3 text-sm">
+        <div class="rounded-xl bg-prode-bg/80 px-4 py-3">
+          <dt class="text-xs uppercase tracking-wide text-prode-muted">Campeón</dt>
+          <dd class="mt-1 font-semibold text-white">{{ form.getRawValue().championPick || '—' }}</dd>
+        </div>
+        <div class="rounded-xl bg-prode-bg/80 px-4 py-3">
+          <dt class="text-xs uppercase tracking-wide text-prode-muted">Goleador</dt>
+          <dd class="mt-1 font-semibold text-white">{{ form.getRawValue().topScorerPick || '—' }}</dd>
+        </div>
+      </dl>
+    </div>
+  } @else {
+    <div class="card-sport max-w-xl p-5 md:p-6">
+      @if (error()) {
+        <p class="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+          {{ error() }}
+        </p>
+      }
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
-      <label class="block">
-        <span class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-prode-muted">
-          <lucide-icon name="trophy" class="text-prode-gold" [size]="16" />
-          Campeón
-        </span>
-        <input
-          type="text"
-          formControlName="championPick"
-          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
-          placeholder="Ej. Argentina"
-        />
-      </label>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+        <label class="block">
+          <span class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-prode-muted">
+            <lucide-icon name="trophy" class="text-prode-gold" [size]="16" />
+            Campeón
+          </span>
+          <input
+            type="text"
+            formControlName="championPick"
+            class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+            placeholder="Ej. Argentina"
+          />
+        </label>
 
-      <label class="block">
-        <span class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-prode-muted">
-          <lucide-icon name="goal" class="text-prode-blue" [size]="16" />
-          Goleador
-        </span>
-        <input
-          type="text"
-          formControlName="topScorerPick"
-          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
-          placeholder="Ej. Lautaro Martínez"
-        />
-      </label>
+        <label class="block">
+          <span class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-prode-muted">
+            <lucide-icon name="goal" class="text-prode-blue" [size]="16" />
+            Goleador
+          </span>
+          <input
+            type="text"
+            formControlName="topScorerPick"
+            class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+            placeholder="Ej. Lautaro Martínez"
+          />
+        </label>
 
-      <button
-        type="submit"
-        [disabled]="busy()"
-        class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-emerald-900/30 transition hover:brightness-110 disabled:opacity-50"
-      >
-        @if (busy()) {
-          <lucide-icon name="loader-2" class="animate-spin" [size]="18" />
-        } @else {
-          <lucide-icon name="shield" [size]="18" />
-        }
-        Guardar y seguir
-      </button>
-    </form>
-  </div>
+        <button
+          type="submit"
+          [disabled]="busy()"
+          class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-emerald-900/30 transition hover:brightness-110 disabled:opacity-50"
+        >
+          @if (busy()) {
+            <lucide-icon name="loader-2" class="animate-spin" [size]="18" />
+          } @else {
+            <lucide-icon name="shield" [size]="18" />
+          }
+          Guardar y seguir
+        </button>
+      </form>
+    </div>
+  }
 </section>

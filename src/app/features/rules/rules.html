@@ -1,0 +1,127 @@
+<section class="space-y-8">
+  <div>
+    <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-blue">Guía rápida</p>
+    <h2 class="font-display text-3xl tracking-wide text-white">Reglas del Prode</h2>
+    <p class="mt-2 max-w-2xl text-sm text-prode-muted">
+      Resumen para jugar el Mundial 2026. El backend calcula todo automáticamente según estas reglas.
+    </p>
+  </div>
+
+  <div class="card-sport space-y-4 p-5">
+    <h3 class="flex items-center gap-2 font-display text-xl text-white">
+      <lucide-icon name="shield" class="text-prode-accent" [size]="20" />
+      Antes de empezar
+    </h3>
+    <ul class="space-y-2 text-sm text-prode-muted">
+      <li>• Elegí tu <strong class="text-white">campeón</strong> y <strong class="text-white">goleador</strong> en Prode inicial (50 pts cada uno si acertás).</li>
+      <li>• Cargá tus predicciones antes de que arranque cada partido.</li>
+      <li>• Después del kickoff no podés cambiar tu predicción, pero sí ver las de los demás.</li>
+      <li>• Campeón y goleador se editan solo hasta el primer pitazo del torneo.</li>
+    </ul>
+  </div>
+
+  <div class="card-sport space-y-4 p-5">
+    <h3 class="flex items-center gap-2 font-display text-xl text-white">
+      <lucide-icon name="target" class="text-prode-gold" [size]="20" />
+      Puntos por partido
+    </h3>
+    <ol class="space-y-3 text-sm text-prode-muted">
+      <li>
+        <strong class="text-white">1. Resultado (obligatorio)</strong> — Acierta si gana el local, el visitante o hay
+        empate. Vale <strong class="text-prode-gold">4 pts</strong>. Si fallás, ese partido suma 0.
+      </li>
+      <li>
+        <strong class="text-white">2. Un solo bonus</strong> — Solo si acertaste el resultado, se suma el mejor bonus
+        que aplique:
+        <ul class="mt-2 space-y-1 pl-4">
+          <li>• <strong class="text-white">Exacto</strong> (local y visitante): +4 → total <strong class="text-prode-gold">8</strong></li>
+          <li>• <strong class="text-white">Diferencia de goles</strong> (ej. 3-1 vs 2-0): +2 → total <strong class="text-prode-gold">6</strong></li>
+          <li>• <strong class="text-white">Goles de un solo equipo</strong>: +1 → total <strong class="text-prode-gold">5</strong></li>
+          <li>• Sin bonus: total <strong class="text-prode-gold">4</strong></li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="card-sport space-y-4 p-5">
+    <h3 class="flex items-center gap-2 font-display text-xl text-white">
+      <lucide-icon name="zap" class="text-sky-300" [size]="20" />
+      Multiplicadores
+    </h3>
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div class="rounded-xl bg-prode-bg/80 p-3 text-center">
+        <p class="text-xs uppercase tracking-wide text-prode-muted">Grupos</p>
+        <p class="font-display text-2xl text-white">×1</p>
+      </div>
+      <div class="rounded-xl bg-prode-bg/80 p-3 text-center">
+        <p class="text-xs uppercase tracking-wide text-prode-muted">Eliminatorias</p>
+        <p class="font-display text-2xl text-white">×2</p>
+      </div>
+      <div class="rounded-xl bg-prode-bg/80 p-3 text-center">
+        <p class="text-xs uppercase tracking-wide text-prode-muted">Final</p>
+        <p class="font-display text-2xl text-white">×3</p>
+      </div>
+    </div>
+    <p class="text-xs text-prode-muted">
+      Ejemplo: exacto en octavos = 8 × 2 = <strong class="text-white">16 pts</strong>. Exacto en la final =
+      <strong class="text-white">24 pts</strong>.
+    </p>
+  </div>
+
+  <div class="card-sport space-y-4 p-5">
+    <h3 class="flex items-center gap-2 font-display text-xl text-white">
+      <lucide-icon name="trophy" class="text-prode-gold" [size]="20" />
+      Campeón y goleador
+    </h3>
+    <p class="text-sm text-prode-muted">
+      Cada acierto suma <strong class="text-prode-gold">50 pts</strong> al total del ranking.
+    </p>
+  </div>
+
+  <div class="card-sport space-y-3 p-5">
+    <h3 class="font-display text-lg text-white">Ejemplos rápidos (fase de grupos)</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[320px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-prode-border text-xs uppercase tracking-wide text-prode-muted">
+            <th class="py-2 pr-3">Tu predicción</th>
+            <th class="py-2 pr-3">Resultado</th>
+            <th class="py-2 text-right">Pts</th>
+          </tr>
+        </thead>
+        <tbody class="text-prode-muted">
+          <tr class="border-b border-prode-border/50">
+            <td class="py-2 pr-3 text-white">2-1</td>
+            <td class="py-2 pr-3">2-1</td>
+            <td class="py-2 text-right font-bold text-prode-gold">8</td>
+          </tr>
+          <tr class="border-b border-prode-border/50">
+            <td class="py-2 pr-3 text-white">3-1</td>
+            <td class="py-2 pr-3">2-0</td>
+            <td class="py-2 text-right font-bold text-prode-gold">6</td>
+          </tr>
+          <tr class="border-b border-prode-border/50">
+            <td class="py-2 pr-3 text-white">2-1</td>
+            <td class="py-2 pr-3">2-0</td>
+            <td class="py-2 text-right font-bold text-prode-gold">5</td>
+          </tr>
+          <tr class="border-b border-prode-border/50">
+            <td class="py-2 pr-3 text-white">3-0</td>
+            <td class="py-2 pr-3">2-1</td>
+            <td class="py-2 text-right font-bold text-prode-gold">4</td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-3 text-white">0-1</td>
+            <td class="py-2 pr-3">2-1</td>
+            <td class="py-2 text-right font-bold text-prode-gold">0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="text-center text-xs text-prode-muted">
+    ¿Querés cargar predicciones?
+    <a routerLink="/fixtures" class="font-semibold text-prode-accent hover:underline">Ir a partidos</a>
+  </p>
+</section>

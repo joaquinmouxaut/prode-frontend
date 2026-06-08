@@ -8,6 +8,9 @@ import { API_BASE_URL } from '../tokens/api-base-url.token';
 export interface LeaderboardRow {
   user: User;
   total: number;
+  matchPoints: number;
+  championPoints: number;
+  topScorerPoints: number;
   groupsPoints: number;
   knockoutPoints: number;
   byPhase: Partial<Record<MatchPhase, number>>;

@@ -204,4 +204,47 @@
       }
     </ul>
   }
+
+  <div class="card-sport space-y-4 p-4 sm:p-5">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-gold">Torneo</p>
+      <h3 class="font-display text-xl tracking-wide text-white">Campeón y goleador oficial</h3>
+      <p class="mt-1 text-xs text-prode-muted">
+        Cada acierto suma 50 pts. La comparación ignora mayúsculas y tildes. Al guardar se recalcula el ranking.
+      </p>
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">Campeón</span>
+        <input
+          type="text"
+          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
+          [ngModel]="tournamentChampion()"
+          (ngModelChange)="tournamentChampion.set($event)"
+          placeholder="Ej. Argentina"
+        />
+      </label>
+      <label class="block">
+        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">Goleador</span>
+        <input
+          type="text"
+          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
+          [ngModel]="tournamentTopScorer()"
+          (ngModelChange)="tournamentTopScorer.set($event)"
+          placeholder="Ej. Lionel Messi"
+        />
+      </label>
+    </div>
+    <button
+      type="button"
+      (click)="saveTournamentResults()"
+      [disabled]="savingTournamentResults()"
+      class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-gold/90 to-amber-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg disabled:opacity-50"
+    >
+      @if (savingTournamentResults()) {
+        <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+      }
+      Guardar y recalcular ranking
+    </button>
+  </div>
 </section>

@@ -31,6 +31,13 @@
           Ranking
         </a>
         <a
+          routerLink="/reglas"
+          routerLinkActive="bg-prode-elevated text-white ring-1 ring-prode-accent/40"
+          class="rounded-full px-3 py-2 text-sm font-medium text-prode-muted transition hover:text-white"
+        >
+          Reglas
+        </a>
+        <a
           routerLink="/setup"
           routerLinkActive="bg-prode-elevated text-white ring-1 ring-prode-accent/40"
           class="rounded-full px-3 py-2 text-sm font-medium text-prode-muted transition hover:text-white"
@@ -66,7 +73,7 @@
     class="fixed bottom-0 left-0 right-0 z-40 border-t border-prode-border bg-prode-surface/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg md:hidden"
     aria-label="Principal"
   >
-    <div class="grid gap-1 px-2 py-2" [class.grid-cols-3]="!auth.isAdmin()" [class.grid-cols-4]="auth.isAdmin()">
+    <div class="grid gap-1 px-2 py-2" [class.grid-cols-4]="!auth.isAdmin()" [class.grid-cols-5]="auth.isAdmin()">
       <a
         routerLink="/fixtures"
         routerLinkActive="text-prode-accent"
@@ -83,6 +90,14 @@
       >
         <lucide-icon name="medal" [size]="22" />
         Ranking
+      </a>
+      <a
+        routerLink="/reglas"
+        routerLinkActive="text-prode-accent"
+        class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+      >
+        <lucide-icon name="book-open" [size]="22" />
+        Reglas
       </a>
       <a
         routerLink="/setup"

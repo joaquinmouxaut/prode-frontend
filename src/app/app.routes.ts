@@ -23,6 +23,10 @@ export const routes: Routes = [
           import('./features/leaderboard/leaderboard').then((m) => m.Leaderboard),
       },
       {
+        path: 'reglas',
+        loadComponent: () => import('./features/rules/rules').then((m) => m.Rules),
+      },
+      {
         path: 'setup',
         loadComponent: () =>
           import('./features/initial-setup/initial-setup').then((m) => m.InitialSetup),

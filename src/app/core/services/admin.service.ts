@@ -43,6 +43,22 @@ export interface FixtureSyncRunResponse {
   skippedByOverride?: number;
 }
 
+export interface TournamentResultsConfig {
+  id: number;
+  championTeam: string | null;
+  topScorerPlayer: string | null;
+}
+
+export interface SetTournamentResultsDto {
+  championTeam?: string;
+  topScorerPlayer?: string;
+}
+
+export interface SetTournamentResultsResponse {
+  config: TournamentResultsConfig;
+  recalculatedUsers: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private readonly http = inject(HttpClient);
@@ -72,5 +88,16 @@ export class AdminService {
 
   runFixtureSyncNow(): Observable<FixtureSyncRunResponse> {
     return this.http.post<FixtureSyncRunResponse>(`${this.baseUrl}/admin/sync/run`, {});
+  }
+
+  getTournamentResults(): Observable<TournamentResultsConfig> {
+    return this.http.get<TournamentResultsConfig>(`${this.baseUrl}/admin/tournament/results`);
+  }
+
+  setTournamentResults(dto: SetTournamentResultsDto): Observable<SetTournamentResultsResponse> {
+    return this.http.patch<SetTournamentResultsResponse>(
+      `${this.baseUrl}/admin/tournament/results`,
+      dto,
+    );
   }
 }

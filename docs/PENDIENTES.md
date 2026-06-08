@@ -4,6 +4,7 @@ Bitácora viva para anotar huecos detectados en desarrollo, pruebas manuales u o
 
 - **Plan de producto:** `docs/PLAN.md`
 - **Guía de pruebas fixture-automation:** `docs/FIXTURE_AUTOMATION_TEST_GUIDE.md`
+- **Reglas de puntaje y visibilidad:** `docs/REGLAS.md`
 - **Tasks SDD por change:** `sdd/{change}/tasks` (cuando aplique)
 
 ---
@@ -30,14 +31,9 @@ Cuando cierres un ítem, cambiá **Estado** a `hecho` y opcionalmente mové la f
 ## Fixture automation (Fase 2)
 
 
-| Fecha | Ítem                                                                                                                                                        | Contexto | Prioridad | Estado  | Notas |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | ------- | ----- |
-| 3/6   | una vez comenzado un partido todos los usuarios deberán poder ver las predicciones de los demás usuarios para ese partido y los que ya se hayan disputado.  |          | alta      | abierto |       |
-| 3/6   | quitar el usuario admin del ranking general                                                                                                                 |          | baja      | abierto |       |
-| 3/6   | crear un documento con las reglas para luego ponerlas en el frontend                                                                                        |          | baja      | abierto |       |
-| 3/6   | cuando el partido aún no haya comenzado los resultados se mostraran como - - y no 0 a 0. Evitar que se calculen puntajes antes de comenzado un partido.     |          | media     | abierto |       |
-| 3/6   | sincronizar un resultado manualmente no impide que se mantenga la sincronización automatica por api mientras la ventana de partido esté activa              |          | alta      | abierto |       |
-| 3/6   | el puntaje por acertar el resultado exacto debe ser 8 y no 12 (4 puntos por acertar el resultado del ganador o empate, más bonus de 4 por resultado exacto) |          | alta      | abierto |       |
+| Fecha | Ítem | Contexto | Prioridad | Estado | Notas |
+| ----- | ---- | -------- | --------- | ------ | ----- |
+|       |      |          |           |        |       |
 
 
 ## Cerrados
@@ -47,6 +43,10 @@ Referencia rápida de ítems ya resueltos (copiá aquí la fila al cerrar):
 
 | Fecha cerrado | Ítem | Cómo se resolvió |
 | ------------- | ---- | ---------------- |
-|               |      |                  |
-
+| 2026-06-05 | Una vez comenzado un partido, todos ven las predicciones ajenas para ese partido y los ya disputados | `PredictionsService.findVisible` + sección "Predicciones del grupo" en `/fixture` |
+| 2026-06-05 | Quitar el usuario admin del ranking general | `LeaderboardService` filtra `role: USER` |
+| 2026-06-05 | Documento con las reglas para luego ponerlas en el frontend | `docs/REGLAS.md` |
+| 2026-06-05 | Antes del kickoff mostrar `— —` y no calcular puntajes | `match-lifecycle` en back/front; recálculo gated por `hasScoreableResult` |
+| 2026-06-05 | Sync manual no impide sync automática en ventana activa | Eliminado skip por `manualOverride` en `applyExternalResult`; last-write-wins |
+| 2026-06-05 | Puntaje exacto = 8 (4 resultado + 4 bonus), no 12 | `PointsService` simplificado; tests actualizados |
 

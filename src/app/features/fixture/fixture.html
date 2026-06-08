@@ -82,14 +82,12 @@
                         <p class="text-xs text-prode-muted">
                           {{ formatWhen(m.date) }}
                         </p>
-                        @if (m.homeGoals !== null && m.awayGoals !== null) {
-                          <p class="inline-flex items-center gap-2 text-xs font-bold text-prode-accent">
-                            <span class="rounded-full bg-prode-accent/15 px-2 py-0.5 text-[10px] uppercase tracking-wide"
-                              >Resultado</span
-                            >
-                            {{ m.homeGoals }} — {{ m.awayGoals }}
-                          </p>
-                        }
+                        <p class="inline-flex items-center gap-2 text-xs font-bold text-prode-accent">
+                          <span class="rounded-full bg-prode-accent/15 px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                            >Resultado</span
+                          >
+                          {{ formatMatchScore(m) }}
+                        </p>
                       </div>
 
                       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -101,7 +99,8 @@
                             <input
                               type="number"
                               min="0"
-                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2 disabled:opacity-50"
+                              [disabled]="isMatchStarted(m)"
                               [ngModel]="draft()[m.id]?.home ?? 0"
                               (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
                             />
@@ -113,25 +112,55 @@
                             <input
                               type="number"
                               min="0"
-                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                              class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2 disabled:opacity-50"
+                              [disabled]="isMatchStarted(m)"
                               [ngModel]="draft()[m.id]?.away ?? 0"
                               (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
                             />
                           </label>
                         </div>
-                        <button
-                          type="button"
-                          (click)="savePrediction(m)"
-                          [disabled]="savingId() === m.id"
-                          class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-emerald-900/25 hover:brightness-110 disabled:opacity-50"
-                        >
-                          @if (savingId() === m.id) {
-                            <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                          }
-                          {{ predictionByMatchId().get(m.id) ? 'Actualizar' : 'Guardar' }}
-                        </button>
+                        @if (!isMatchStarted(m)) {
+                          <button
+                            type="button"
+                            (click)="savePrediction(m)"
+                            [disabled]="savingId() === m.id"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-emerald-900/25 hover:brightness-110 disabled:opacity-50"
+                          >
+                            @if (savingId() === m.id) {
+                              <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                            }
+                            {{ predictionByMatchId().get(m.id) ? 'Actualizar' : 'Guardar' }}
+                          </button>
+                        } @else {
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-amber-200"
+                          >
+                            <lucide-icon name="lock" [size]="14" />
+                            Bloqueado
+                          </span>
+                        }
                       </div>
                     </div>
+                    @if (otherPredictionsForMatch(m).length > 0) {
+                      <div class="border-t border-prode-border/60 bg-prode-bg/40 px-4 py-3">
+                        <p class="mb-2 text-[10px] font-bold uppercase tracking-wider text-prode-muted">
+                          Predicciones del grupo
+                        </p>
+                        <ul class="space-y-1.5">
+                          @for (p of otherPredictionsForMatch(m); track p.id) {
+                            <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
+                              <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                              <span class="shrink-0 font-bold text-emerald-200">
+                                {{ p.homeGoals }} — {{ p.awayGoals }}
+                                @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {
+                                  <span class="ml-2 text-prode-accent">+{{ p.points }} pts</span>
+                                }
+                              </span>
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                    }
                   </li>
                 }
               </ul>

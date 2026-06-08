@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { LeaderboardService, type LeaderboardRow } from '../../core/services/leaderboard.service';
 
 @Component({
   selector: 'app-leaderboard',
-  imports: [AppLucideIconsModule],
+  imports: [RouterLink, AppLucideIconsModule],
   templateUrl: './leaderboard.html',
   styleUrl: './leaderboard.scss',
 })

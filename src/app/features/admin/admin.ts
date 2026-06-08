@@ -41,22 +41,22 @@ export class Admin {
   protected readonly syncingNow = signal(false);
   protected readonly syncStatus = signal<FixtureSyncStatusResponse | null>(null);
   protected readonly loadingSyncStatus = signal(false);
+  protected readonly savingTournamentResults = signal(false);
+  protected readonly tournamentChampion = signal('');
+  protected readonly tournamentTopScorer = signal('');
 
   protected readonly resultMatches = computed(() =>
-    [...this.matches()].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    ),
+    [...this.matches()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   );
 
-  protected readonly pendingCount = computed(
-    () => this.matches().filter(isMatchPending).length,
-  );
+  protected readonly pendingCount = computed(() => this.matches().filter(isMatchPending).length);
 
   protected readonly isMatchPending = isMatchPending;
 
   constructor() {
     this.refresh();
     this.refreshSyncStatus();
+    this.loadTournamentResults();
   }
 
   refresh(): void {
@@ -217,5 +217,36 @@ export class Admin {
         this.unlockingId.set(null);
       },
     });
+  }
+
+  loadTournamentResults(): void {
+    this.adminApi.getTournamentResults().subscribe({
+      next: (config) => {
+        this.tournamentChampion.set(config.championTeam ?? '');
+        this.tournamentTopScorer.set(config.topScorerPlayer ?? '');
+      },
+    });
+  }
+
+  saveTournamentResults(): void {
+    this.savingTournamentResults.set(true);
+    this.adminApi
+      .setTournamentResults({
+        championTeam: this.tournamentChampion().trim(),
+        topScorerPlayer: this.tournamentTopScorer().trim(),
+      })
+      .subscribe({
+        next: (result) => {
+          this.savingTournamentResults.set(false);
+          this.tournamentChampion.set(result.config.championTeam ?? '');
+          this.tournamentTopScorer.set(result.config.topScorerPlayer ?? '');
+          this.toast.success(
+            `Resultados del torneo guardados. ${result.recalculatedUsers} usuarios recalculados.`,
+          );
+        },
+        error: () => {
+          this.savingTournamentResults.set(false);
+        },
+      });
   }
 }

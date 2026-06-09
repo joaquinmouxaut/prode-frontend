@@ -1,7 +1,7 @@
 # Plan de trabajo — Prode World Cup 2026
 
-> **Última sesión:** Viernes 29 de mayo de 2026 — **Fase 2: `admin-ui` cerrado** ✅ (siguiente: `fixture-automation`)
-> **Deadline blando (deploy):** Viernes 5 de junio de 2026
+> **Última sesión:** Lunes 9 de junio de 2026 — **Fase 3: `deploy-v1` en planificación** (objetivo: online hoy)
+> **Deadline blando (deploy):** ~~Viernes 5 de junio~~ → **Martes 9 de junio de 2026 (hoy)**
 > **Deadline duro (inicio Mundial):** Jueves 11 de junio de 2026
 > **Equipo:** 1 dev (solo)
 > **Usuarios objetivo:** amigos (≤ 50 personas)
@@ -117,27 +117,22 @@ gantt
 
 **Salida esperada:** app completa funcionalmente con datos del Mundial cargados localmente.
 
-### Fase 3 — Provisionar y deploy (Sáb 30, Dom 31, Lun 1-jun)
+### Fase 3 — Deploy v1 (Mar 9-jun — **hoy, versión mínima**)
 
-**Objetivo:** App accesible en internet con datos reales.
+**Objetivo:** App accesible en internet **hoy**. Una tarde, 6 tareas. Sin extras.
 
-- **Sáb 30:**
-  - Crear cuenta Neon, base de datos, copiar connection string.
-  - Migrar schema y seed a Neon (`prisma migrate deploy` + seed).
-  - Crear cuenta Render, deploy del backend, configurar env vars.
-  - Healthcheck del back desde fuera (`GET /matches`).
-- **Dom 31:**
-  - Crear cuenta Vercel, conectar repo del frontend.
-  - Configurar `environment.production.ts` con URL del back en Render.
-  - Variable `apiBaseUrl` por entorno; deploy preview verde.
-  - CORS abierto en el back para el dominio de Vercel.
-- **Lun 1-jun:**
-  - Smoke test end-to-end en producción.
-  - Crear usuario admin de prod, cargar 1 resultado real ficticio y verificar recálculo.
-  - Documentar URLs + credenciales en `docs/OPERATIONS.md`.
-  - *(Opcional)* Configurar ping externo (UptimeRobot / cron-job.org) cada 10 min en horario de partidos para reducir cold starts — no es necesario, pero mejora la UX en días de uso intenso.
+> **Recortes conscientes:** no `OPERATIONS.md`, no UptimeRobot, no tag `v1.0.0`, no smoke elaborado, no resultado ficticio de prueba, no beta formal (eso pasa a Fase 4). Cold start de Render aceptado.
 
-**Salida esperada:** URL pública de Vercel sirviendo el frontend conectado al backend en Render. App usable por cualquiera con el link.
+| # | Tarea | Tiempo | Hecho |
+|---|-------|--------|-------|
+| **T1** | **Neon:** crear proyecto free, copiar `DATABASE_URL` (connection pooling). Desde local: `npx prisma migrate deploy` apuntando a Neon. | ~15 min | [ ] |
+| **T2** | **Render:** Web Service free conectado a `prode-backend`. Build: `npm install && npx prisma generate && npm run build`. Start: `npm run start:prod`. Env: `DATABASE_URL`, `JWT_SECRET` (random 32+ chars), `CORS_ORIGIN` (URL Vercel — se actualiza en T5), `FOOTBALL_DATA_API_TOKEN` (si ya lo tenés). Verificar `GET /matches` desde el browser. | ~30 min | [ ] |
+| **T3** | **Front config (código):** crear `environment.production.ts` con URL de Render, agregar `fileReplacements` en `angular.json`, agregar `vercel.json` con rewrite SPA. Commit + push. | ~15 min | [ ] |
+| **T4** | **Vercel:** importar repo `prode-frontend`. Build: `ng build`. Output: `dist/prode-app/browser`. Deploy production. | ~20 min | [ ] |
+| **T5** | **CORS + admin + datos:** actualizar `CORS_ORIGIN` en Render con la URL de Vercel y redeploy. Registrarte en prod → en Neon SQL: `UPDATE "User" SET role = 'ADMIN' WHERE email = 'tu@email.com'`. Re-login → importar fixture desde `/admin` (`POST /admin/fixture/import`). | ~15 min | [ ] |
+| **T6** | **Smoke mínimo:** login, fixtures cargan, hacer 1 predicción, leaderboard responde. Compartir link con 1 amigo. | ~10 min | [ ] |
+
+**Salida esperada:** link de Vercel funcionando end-to-end. Listo para invitar amigos mañana (Fase 4 acelerada).
 
 ### Fase 4 — Beta interna (Mar 2, Mié 3, Jue 4)
 
@@ -220,49 +215,39 @@ Estos quedan para **v1.1+** después del 11 de junio.
 
 ---
 
-## 7. Próximas acciones (próxima sesión — Fase 2 / `fixture-automation`)
+## 7. Próximas acciones (sesión actual — Fase 3 / `deploy-v1`)
 
-> **Cambio de alcance:** el fixture deja de cargarse a mano. Se incorpora una nueva funcionalidad no prevista en el plan original: **importación automática del fixture** desde una API pública de fútbol y **seguimiento de resultados en vivo (o casi)** que dispara el recálculo de puntaje, conservando siempre el override manual del admin.
+**Estado:** Fases 0–2 cerradas. Backend y frontend en `master` con fixture-automation, scoring v2, bonus torneo, bloqueos pre-kickoff. Artefacto SDD: `sdd/deploy-v1/explore` en Engram.
 
-1. Abrir workspace `../prode.code-workspace` (front + back).
-2. Recuperar contexto Engram: `project: prode-frontend`, topic `prode/session-latest` y `prode/next-fixture-automation`.
-3. Confirmar estado git: ambos repos en `master` trackeando `origin/master` (auth-jwt + admin-ui ya pusheados al cerrar la sesión anterior).
-4. **Planificar primero** (no implementar de una): hacer la búsqueda web de la API y comparar opciones antes de proponer.
-5. Iniciar change **`fixture-automation`** con SDD engram: `sdd-explore` (API + arquitectura de polling) → `sdd-propose` → spec/design/tasks → apply.
+### Orden de ejecución (hoy)
 
-### Requisitos de la nueva funcionalidad (para la planificación)
+1. **T1 Neon** — crear DB, `prisma migrate deploy` desde local.
+2. **T2 Render** — deploy backend, verificar `GET /matches`.
+3. **T3 Código front** — `environment.production.ts`, `fileReplacements`, `vercel.json`.
+4. **T4 Vercel** — deploy frontend.
+5. **T5 CORS + admin + fixture import** — ver tabla Fase 3.
+6. **T6 Smoke mínimo** — login → predicción → leaderboard.
 
-- **Búsqueda web** de una API pública de fútbol que sea **gratis, sencilla y con cobertura del Mundial 2026**. Candidatas a evaluar (validar cuota/cobertura en la sesión): `football-data.org` (free tier), `TheSportsDB` (free), `API-Football` (RapidAPI free tier). Criterios: límite de requests del free tier, si expone fixtures + estado del partido (en juego/finalizado) + marcador en vivo, formato de fechas/UTC, y mapeo a nuestras 8 fases.
-- **Importación de fixture** previa al torneo: script/endpoint admin que traiga los 48 equipos y los partidos, mapeando a `Match` (homeTeam, awayTeam, date UTC-3, phase). Reemplaza el seed manual de `world-cup-fixture`.
-- **Polling de resultados en vivo**: durante un partido, el backend consulta la API cada *N* segundos/minutos hasta que el partido esté marcado como **finalizado**. Ante un **cambio de marcador**, dispara el recálculo de puntaje de cada predicción de ese partido (fase + total), reutilizando `PointsService` y la lógica de `AdminService.setMatchResultAndRecalculate`.
-- **Override manual** del admin siempre disponible (UI actual de `/admin`) por si la API falla o trae datos erróneos; decidir precedencia (¿manual “congela” el partido frente al poller?).
-- **Decisiones a tomar en planificación**: scheduler (`@nestjs/schedule` / cron vs intervalo), de dónde sale el calendario de qué partidos pollear, idempotencia del recálculo, manejo de rate limits y errores de la API, almacenamiento del `externalId` del partido para el matcheo.
+### Env vars Render (referencia rápida)
+
+| Variable | Valor |
+|----------|-------|
+| `DATABASE_URL` | Connection string pooled de Neon |
+| `JWT_SECRET` | String random 32+ caracteres |
+| `CORS_ORIGIN` | URL de Vercel (ej. `https://prode-xxx.vercel.app`) |
+| `FOOTBALL_DATA_API_TOKEN` | Token football-data.org (opcional pero recomendado) |
+| `FIXTURE_POLL_ENABLED` | `true` |
 
 ### Prompt de arranque sugerido
 
 ```text
-Continuamos Prode WC 2026 — Fase 2 / change fixture-automation.
-Abrí ../prode.code-workspace (front + back), leé docs/PLAN.md (§7 y §8) y recuperá contexto con mem_search/mem_context:
-project: prode-frontend, topics: prode/session-latest y prode/next-fixture-automation.
-
-Estado actual:
-- prode-frontend master -> origin/master ; prode-backend master -> origin/master
-- Fase 1 cerrada (phase-model-alignment, leaderboard-from-backend, auth-jwt) y Fase 2 admin-ui cerrada (ruta /admin con guard ADMIN, PATCH /admin/matches/:id/result con recálculo).
-
-Quiero PLANIFICAR esta etapa antes de implementar:
-1. Hacé una búsqueda web de una API pública de fútbol gratis, sencilla y con cobertura del Mundial 2026 (evaluá football-data.org, TheSportsDB, API-Football). Compará free tier, cobertura de fixtures + estado del partido + marcador en vivo, y mapeo a nuestras 8 fases.
-2. Con eso, arrancá SDD engram: sdd-explore -> sdd-propose -> spec -> design -> tasks. (Implementación recién después.)
-
-Objetivo de la funcionalidad:
-- Importar automáticamente el fixture (48 equipos + partidos) en vez de cargarlo a mano.
-- Durante cada partido, el backend pollea el resultado cada cierto tiempo hasta que figure como finalizado; ante un cambio de marcador, recalcula el puntaje de cada predicción de ese partido (fase + total) reutilizando PointsService.
-- Mantener SIEMPRE el override manual del admin (UI /admin) ante cualquier eventualidad.
-- Definir scheduler, rate limits/errores, externalId para matchear partidos e idempotencia del recálculo.
-
-No push salvo que lo pida.
+Continuamos Prode WC 2026 — Fase 3 deploy-v1 (online hoy).
+Workspace prode.code-workspace, contexto Engram: sdd/deploy-v1/explore y prode/session-latest.
+Seguir docs/PLAN.md § Fase 3 (6 tareas T1–T6).
+Empezar por T1 Neon + T3 código front en paralelo si podés.
 ```
 
-> En modo engram, al cerrar un change usar `sdd-archive` + resumen en memoria (sin `openspec/changes/archive/`).
+> Post-deploy: Fase 4 acelerada (invitar amigos mañana 10-jun). Tag v1.0.0 el día del kickoff (11-jun).
 
 ---
 
@@ -274,5 +259,7 @@ No push salvo que lo pida.
 | **Sáb 23-may** | **Fase 0 completa** | `prode.code-workspace`, `git init` front, `sdd-init` engram, `AGENTS.md`, `.atl/skill-registry.md`, ESLint (`ng lint` OK), explore fases/puntaje, merge a `master` | Commit `84f501d` · `prode/session-latest` · `sdd-init/prode-frontend` · `sdd/explore/phase-scoring-world-cup-2026` |
 | **Mar 26-may** | **Fase 1 parcial** | `phase-model-alignment` cerrado (8 fases Prisma + `PointsService` + test 9/9) y `leaderboard-from-backend` cerrado (`GET /leaderboard`, front sin agregación local, test 2/2). Ambos repos subidos a GitHub. | Front `4319d36` · Back `master -> origin/master` · `prode/session-latest` · `sdd/phase-model-alignment/apply-progress` · `sdd/leaderboard-from-backend/apply-progress` |
 | **Vie 29-may** | **Fase 2 — `admin-ui`** | `admin-ui` implementado y verificado (smoke manual OK): ruta `/admin` con `adminGuard`, `AdminService` → `PATCH /admin/matches/:id/result`, UI de partidos pendientes, nav condicional ADMIN, `User.role` + hidratación desde JWT. `ng test` 11/11, `ng lint` OK. **Hallazgo:** `auth-jwt` (Fase 1) y `admin-ui` estaban **sin commitear** pese a nota previa; se commitean y pushean al cerrar esta sesión. Backend deja de versionar `dist/`. | `sdd/admin-ui/{proposal,spec,design,tasks,apply-progress,verify,archive-report}` · `prode/session-latest` · `prode/next-fixture-automation` |
+| **Lun 8-jun** | **Fase 2 cierre + prode-v1** | `fixture-automation`, scoring v2, bonus 50/50, REGLAS, bloqueos pre-kickoff. PENDIENTES.md cerrado. Push remoto back `2a96766`, front `3ff222d`. | `prode/session-latest` · tests back 71/71 |
+| **Mar 9-jun** | **Fase 3 — `deploy-v1` plan** | Plan simplificado a 6 tareas (Neon + Render + Vercel). Recortes: OPERATIONS.md, UptimeRobot, smoke elaborado. | `sdd/deploy-v1/explore` |
 
-**Carry-over Fase 2:** iniciar `fixture-automation` — **planificar primero** (búsqueda web de API pública gratis) y recién después implementar import automático de fixture + polling de resultados en vivo con recálculo, manteniendo override manual del admin. Backend sigue siendo fuente de verdad del puntaje.
+**Carry-over:** ejecutar T1–T6 hoy para quedar online antes del kickoff (11-jun).

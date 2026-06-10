@@ -4,9 +4,11 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
+import { BRANDING } from './core/constants/branding';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { httpErrorInterceptor } from './core/interceptors/http-error.interceptor';
@@ -24,6 +26,12 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       deps: [AuthService],
       useFactory: (auth: AuthService) => () => firstValueFrom(auth.hydrateFromStorage()),
+    },
+    {
+      provide: APP_INITIALIZER,
+      multi: true,
+      deps: [Title],
+      useFactory: (title: Title) => () => title.setTitle(BRANDING.appTitle),
     },
   ],
 };

@@ -1,7 +1,7 @@
 <section class="space-y-6">
   <header class="space-y-2">
-    <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-accent">Antes del pitazo inicial</p>
-    <h2 class="font-display text-3xl tracking-wide text-white">Tu prode inicial</h2>
+    <p class="eyebrow text-prode-accent">Antes del pitazo inicial</p>
+    <h2 class="font-display text-3xl tracking-wide text-stone-100">Tu prode inicial</h2>
     <p class="max-w-xl text-sm text-prode-muted">
       Elegí campeón y goleador. Cada acierto suma <strong class="text-prode-gold">50 pts</strong>. Podés cambiarlos
       hasta que arranque el <strong class="text-white">primer partido</strong> del torneo.
@@ -53,7 +53,7 @@
           <input
             type="text"
             formControlName="championPick"
-            class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+            class="input-field"
             placeholder="Ej. Argentina"
           />
         </label>
@@ -66,7 +66,7 @@
           <input
             type="text"
             formControlName="topScorerPick"
-            class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+            class="input-field"
             placeholder="Ej. Lautaro Martínez"
           />
         </label>
@@ -74,7 +74,7 @@
         <button
           type="submit"
           [disabled]="busy()"
-          class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-emerald-900/30 transition hover:brightness-110 disabled:opacity-50"
+          class="btn-primary"
         >
           @if (busy()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="18" />

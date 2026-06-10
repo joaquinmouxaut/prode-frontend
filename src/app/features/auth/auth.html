@@ -1,12 +1,14 @@
-<div class="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
+<div
+  class="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-[max(2rem,env(safe-area-inset-top,0px))]"
+>
   <div class="mb-8 text-center">
-    <div
-      class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-prode-blue/40 to-prode-accent/30 ring-1 ring-white/10"
-    >
-      <lucide-icon name="trophy" class="h-7 w-7 text-prode-gold" aria-hidden="true" />
+    <div class="mx-auto mb-4 flex justify-center">
+      <app-brand-mark size="md" />
     </div>
-    <h1 class="font-display text-3xl tracking-wide text-white">Entrá al prode</h1>
-    <p class="mt-1 text-sm text-prode-muted">Predicciones, puntos y tablero en vivo.</p>
+    <h1 class="font-display text-3xl tracking-wide text-stone-100 sm:text-4xl">
+      Entrá a {{ branding.appName }}
+    </h1>
+    <p class="mt-2 text-sm text-prode-muted">Predicciones, puntos y tablero en vivo.</p>
   </div>
 
   <div class="card-sport p-1">
@@ -14,7 +16,7 @@
       <button
         type="button"
         (click)="setMode('login')"
-        class="rounded-lg py-2.5 text-sm font-semibold transition"
+        class="touch-target rounded-lg py-3 text-sm font-semibold transition"
         [class.bg-prode-elevated]="mode() === 'login'"
         [class.text-white]="mode() === 'login'"
         [class.text-prode-muted]="mode() !== 'login'"
@@ -27,7 +29,7 @@
       <button
         type="button"
         (click)="setMode('register')"
-        class="rounded-lg py-2.5 text-sm font-semibold transition"
+        class="touch-target rounded-lg py-3 text-sm font-semibold transition"
         [class.bg-prode-elevated]="mode() === 'register'"
         [class.text-white]="mode() === 'register'"
         [class.text-prode-muted]="mode() !== 'register'"
@@ -39,7 +41,7 @@
       </button>
     </div>
 
-    <div class="p-5">
+    <div class="p-4 sm:p-5">
       @if (error()) {
         <p
           class="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"
@@ -59,7 +61,7 @@
               type="email"
               formControlName="email"
               autocomplete="email"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="vos@equipo.com"
             />
           </label>
@@ -71,15 +73,11 @@
               type="password"
               formControlName="password"
               autocomplete="current-password"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="Tu contraseña"
             />
           </label>
-          <button
-            type="submit"
-            [disabled]="busy()"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-emerald-400 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-emerald-900/30 transition hover:brightness-110 disabled:opacity-50"
-          >
+          <button type="submit" [disabled]="busy()" class="btn-primary">
             @if (busy()) {
               <lucide-icon name="loader-2" class="animate-spin" [size]="18" />
             } @else {
@@ -98,7 +96,7 @@
               type="text"
               formControlName="name"
               autocomplete="name"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="Tu nombre o apodo"
             />
           </label>
@@ -110,7 +108,7 @@
               type="email"
               formControlName="email"
               autocomplete="email"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="vos@equipo.com"
             />
           </label>
@@ -122,7 +120,7 @@
               type="password"
               formControlName="password"
               autocomplete="new-password"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="Al menos 6 caracteres"
             />
           </label>
@@ -134,7 +132,7 @@
               type="password"
               formControlName="confirmPassword"
               autocomplete="new-password"
-              class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-3 text-sm text-white outline-none ring-prode-accent/40 placeholder:text-slate-600 focus:ring-2"
+              class="input-field"
               placeholder="Repetí la contraseña"
             />
           </label>
@@ -144,7 +142,7 @@
           <button
             type="submit"
             [disabled]="busy()"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-blue to-sky-300 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-sky-900/30 transition hover:brightness-110 disabled:opacity-50"
+            class="touch-target inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-stone-300 to-stone-100 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-stone-900/20 transition hover:brightness-110 disabled:opacity-50"
           >
             @if (busy()) {
               <lucide-icon name="loader-2" class="animate-spin" [size]="18" />

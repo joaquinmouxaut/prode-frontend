@@ -1,14 +1,24 @@
 @if (toast(); as t) {
   <div
-    class="fixed bottom-4 right-4 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-slide-in z-[9999] max-w-sm"
-    [class.bg-emerald-500]="t.type === 'success'"
-    [class.bg-red-500]="t.type === 'error'"
-    [class.bg-blue-500]="t.type === 'info'"
+    class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-[9999] mx-auto flex max-w-sm items-center gap-3 rounded-xl px-4 py-3 shadow-lg animate-slide-in md:bottom-4 md:left-auto md:right-4"
+    [class.bg-prode-accent]="t.type === 'success'"
+    [class.bg-red-600]="t.type === 'error'"
+    [class.bg-prode-elevated]="t.type === 'info'"
+    [class.ring-1]="t.type === 'info'"
+    [class.ring-prode-border]="t.type === 'info'"
   >
     <span class="flex-shrink-0 text-lg">{{ icon }}</span>
-    <span class="flex-1 text-sm font-medium text-white">{{ t.message }}</span>
+    <span
+      class="flex-1 text-sm font-medium"
+      [class.text-prode-bg]="t.type === 'success'"
+      [class.text-white]="t.type === 'error' || t.type === 'info'"
+    >
+      {{ t.message }}
+    </span>
     <button
-      class="flex-shrink-0 bg-transparent border-0 text-lg cursor-pointer opacity-70 hover:opacity-100 transition-opacity text-white"
+      class="touch-target flex-shrink-0 border-0 bg-transparent text-lg opacity-70 transition-opacity hover:opacity-100"
+      [class.text-prode-bg]="t.type === 'success'"
+      [class.text-white]="t.type === 'error' || t.type === 'info'"
       (click)="dismiss()"
       aria-label="Cerrar"
     >

@@ -2,7 +2,7 @@
   <div class="card-sport space-y-4 p-4 sm:p-5">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-[0.25em] text-emerald-300">
+        <p class="eyebrow text-prode-accent">
           Fixture automation
         </p>
         <h3 class="font-display text-xl tracking-wide text-white">Import y sincronización</h3>
@@ -15,7 +15,7 @@
           type="button"
           (click)="importFixture()"
           [disabled]="importingFixture()"
-          class="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
+          class="touch-target inline-flex items-center justify-center gap-2 rounded-full border border-prode-accent/40 bg-prode-accent/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-amber-100 hover:bg-prode-accent/25 disabled:opacity-50"
         >
           @if (importingFixture()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
@@ -26,7 +26,7 @@
           type="button"
           (click)="runSyncNow()"
           [disabled]="syncingNow()"
-          class="inline-flex items-center justify-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-sky-100 hover:bg-sky-500/25 disabled:opacity-50"
+          class="touch-target inline-flex items-center justify-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-stone-200 hover:bg-prode-border/40 disabled:opacity-50"
         >
           @if (syncingNow()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
@@ -128,13 +128,13 @@
                   >
                 } @else {
                   <span
-                    class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                    class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
                     >Con resultado</span
                   >
                 }
                 @if (m.manualOverride) {
                   <span
-                    class="rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-200"
+                    class="rounded-full border border-prode-border bg-prode-elevated px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-300"
                     >Override manual</span
                   >
                 }

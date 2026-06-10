@@ -3,8 +3,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
+import { BRANDING } from '../../core/constants/branding';
 import { AuthService } from '../../core/services/auth.service';
+import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { MATCH_PHASE_LABELS, type MatchPhase } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
@@ -36,6 +37,7 @@ interface FixtureDayGroup {
 export class Fixture {
   private readonly predictionsApi = inject(PredictionsService);
   protected readonly auth = inject(AuthService);
+  protected readonly branding = BRANDING;
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
 

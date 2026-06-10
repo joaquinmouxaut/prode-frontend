@@ -8,12 +8,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
+import { BRANDING } from '../../core/constants/branding';
 import { AuthService } from '../../core/services/auth.service';
+import { BrandMarkComponent } from '../../shared/components/brand-mark/brand-mark';
+import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 
 @Component({
   selector: 'app-auth',
-  imports: [ReactiveFormsModule, AppLucideIconsModule],
+  imports: [ReactiveFormsModule, AppLucideIconsModule, BrandMarkComponent],
   templateUrl: './auth.html',
   styleUrl: './auth.scss',
 })
@@ -22,6 +24,7 @@ export class Auth implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  protected readonly branding = BRANDING;
   protected readonly mode = signal<'login' | 'register'>('login');
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);

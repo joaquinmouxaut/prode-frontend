@@ -1,17 +1,15 @@
-<div class="flex min-h-dvh flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-6">
+<div class="flex min-h-dvh flex-col pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6">
   <header
-    class="sticky top-0 z-30 border-b border-prode-border/80 bg-prode-bg/85 px-4 py-3 backdrop-blur-md md:px-8"
+    class="sticky top-0 z-30 border-b border-prode-border/80 bg-prode-bg/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] backdrop-blur-md md:px-8"
   >
-    <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
-      <a routerLink="/fixtures" class="group flex items-center gap-2">
-        <span
-          class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-prode-blue/30 to-prode-accent/25 ring-1 ring-white/10"
-        >
-          <lucide-icon name="trophy" class="h-5 w-5 text-prode-gold" aria-hidden="true" />
-        </span>
-        <div class="leading-tight">
-          <p class="font-display text-xl tracking-wide text-white">PRODE</p>
-          <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-prode-muted">Mundial</p>
+    <div class="mx-auto flex max-w-5xl items-center justify-between gap-2">
+      <a routerLink="/fixtures" class="group flex min-h-11 min-w-0 flex-1 items-center gap-2.5">
+        <app-brand-mark size="sm" />
+        <div class="min-w-0 leading-tight">
+          <p class="truncate font-display text-lg tracking-wide text-stone-100 sm:text-xl">{{ branding.appName }}</p>
+          <p class="truncate text-[10px] font-medium uppercase tracking-[0.2em] text-prode-muted">
+            {{ branding.tagline }}
+          </p>
         </div>
       </a>
       <div class="hidden items-center gap-2 sm:flex">
@@ -47,7 +45,7 @@
         @if (auth.isAdmin()) {
           <a
             routerLink="/admin"
-            routerLinkActive="bg-prode-elevated text-white ring-1 ring-amber-400/40"
+            routerLinkActive="bg-prode-elevated text-white ring-1 ring-prode-accent/40"
             class="rounded-full px-3 py-2 text-sm font-medium text-prode-muted transition hover:text-white"
           >
             Admin
@@ -57,9 +55,9 @@
       <button
         type="button"
         (click)="logout()"
-        class="inline-flex items-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-3 py-2 text-xs font-semibold text-prode-muted transition hover:border-rose-500/40 hover:text-rose-300"
+        class="touch-target inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-3 py-2 text-xs font-semibold text-prode-muted transition hover:border-rose-500/40 hover:text-rose-300"
       >
-        <lucide-icon name="log-out" [size]="16" aria-hidden="true" />
+        <lucide-icon name="log-out" [size]="18" aria-hidden="true" />
         <span class="hidden sm:inline">Salir</span>
       </button>
     </div>
@@ -70,50 +68,54 @@
   </main>
 
   <nav
-    class="fixed bottom-0 left-0 right-0 z-40 border-t border-prode-border bg-prode-surface/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg md:hidden"
+    class="fixed bottom-0 left-0 right-0 z-40 border-t border-prode-border bg-prode-surface/98 backdrop-blur-lg md:hidden"
     aria-label="Principal"
   >
-    <div class="grid gap-1 px-2 py-2" [class.grid-cols-4]="!auth.isAdmin()" [class.grid-cols-5]="auth.isAdmin()">
+    <div
+      class="grid gap-0.5 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-1"
+      [class.grid-cols-4]="!auth.isAdmin()"
+      [class.grid-cols-5]="auth.isAdmin()"
+    >
       <a
         routerLink="/fixtures"
-        routerLinkActive="text-prode-accent"
+        routerLinkActive="bg-prode-elevated/80 text-prode-accent"
         [routerLinkActiveOptions]="{ exact: false }"
-        class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+        class="touch-target flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold text-prode-muted"
       >
-        <lucide-icon name="layout-grid" [size]="22" />
+        <lucide-icon name="layout-grid" [size]="24" />
         Partidos
       </a>
       <a
         routerLink="/leaderboard"
-        routerLinkActive="text-prode-accent"
-        class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+        routerLinkActive="bg-prode-elevated/80 text-prode-accent"
+        class="touch-target flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold text-prode-muted"
       >
-        <lucide-icon name="medal" [size]="22" />
+        <lucide-icon name="medal" [size]="24" />
         Ranking
       </a>
       <a
         routerLink="/reglas"
-        routerLinkActive="text-prode-accent"
-        class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+        routerLinkActive="bg-prode-elevated/80 text-prode-accent"
+        class="touch-target flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold text-prode-muted"
       >
-        <lucide-icon name="book-open" [size]="22" />
+        <lucide-icon name="book-open" [size]="24" />
         Reglas
       </a>
       <a
         routerLink="/setup"
-        routerLinkActive="text-prode-accent"
-        class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+        routerLinkActive="bg-prode-elevated/80 text-prode-accent"
+        class="touch-target flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold text-prode-muted"
       >
-        <lucide-icon name="shield" [size]="22" />
-        Prode
+        <lucide-icon name="shield" [size]="24" />
+        Inicial
       </a>
       @if (auth.isAdmin()) {
         <a
           routerLink="/admin"
-          routerLinkActive="text-amber-400"
-          class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold text-prode-muted"
+          routerLinkActive="bg-prode-elevated/80 text-prode-accent"
+          class="touch-target flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold text-prode-muted"
         >
-          <lucide-icon name="settings" [size]="22" />
+          <lucide-icon name="settings" [size]="24" />
           Admin
         </a>
       }

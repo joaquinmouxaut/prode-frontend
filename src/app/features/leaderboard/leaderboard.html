@@ -1,8 +1,8 @@
 <section class="space-y-6">
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-gold">Ranking</p>
-      <h2 class="font-display text-3xl tracking-wide text-white">Tabla de posiciones</h2>
+      <p class="eyebrow text-prode-gold">Ranking</p>
+      <h2 class="font-display text-3xl tracking-wide text-stone-100">Tabla de posiciones</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
         Puntos totales: partidos + campeón/goleador (50 pts c/u). Ver
         <a routerLink="/reglas" class="font-semibold text-prode-accent hover:underline">reglas</a>.
@@ -11,7 +11,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
+      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-full border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar

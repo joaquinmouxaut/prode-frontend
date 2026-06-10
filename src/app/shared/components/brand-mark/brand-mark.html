@@ -1,0 +1,60 @@
+<svg
+  [attr.width]="px()"
+  [attr.height]="px()"
+  viewBox="0 0 40 40"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  [attr.aria-label]="'Prode ' + cohort()"
+  role="img"
+>
+  <defs>
+    <pattern id="tala-stripes" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="2" fill="#fafafa" />
+      <rect y="2" width="4" height="2" fill="#0c0c0c" />
+    </pattern>
+    <clipPath id="ninety-three-clip">
+      <text
+        x="20"
+        y="28"
+        text-anchor="middle"
+        font-family="'Bebas Neue', ui-sans-serif, system-ui, sans-serif"
+        font-size="22"
+        font-weight="400"
+      >
+        93
+      </text>
+    </clipPath>
+  </defs>
+  <rect
+    x="1"
+    y="1"
+    width="38"
+    height="38"
+    rx="10"
+    fill="#0c0c0c"
+    stroke="#f5f5f4"
+    stroke-width="1.5"
+  />
+  <rect
+    x="4"
+    y="4"
+    width="32"
+    height="32"
+    rx="8"
+    fill="url(#tala-stripes)"
+    clip-path="url(#ninety-three-clip)"
+  />
+  <text
+    x="20"
+    y="28"
+    text-anchor="middle"
+    font-family="'Bebas Neue', ui-sans-serif, system-ui, sans-serif"
+    font-size="22"
+    font-weight="400"
+    fill="none"
+    stroke="#0c0c0c"
+    stroke-width="0.6"
+  >
+    93
+  </text>
+</svg>

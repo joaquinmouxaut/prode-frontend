@@ -52,6 +52,7 @@ export class Fixture {
   protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
   protected readonly savingId = signal<number | null>(null);
   protected readonly rowError = signal<string | null>(null);
+  protected readonly expandedPredictionMatchIds = signal<Set<number>>(new Set());
 
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
 
@@ -199,6 +200,22 @@ export class Fixture {
       (prediction) =>
         prediction.matchId === match.id && prediction.userId !== user.id && prediction.user,
     );
+  }
+
+  isPredictionsExpanded(matchId: number): boolean {
+    return this.expandedPredictionMatchIds().has(matchId);
+  }
+
+  togglePredictions(matchId: number): void {
+    this.expandedPredictionMatchIds.update((ids) => {
+      const next = new Set(ids);
+      if (next.has(matchId)) {
+        next.delete(matchId);
+      } else {
+        next.add(matchId);
+      }
+      return next;
+    });
   }
 
   private buildGroups(matches: Match[]): FixtureDayGroup[] {

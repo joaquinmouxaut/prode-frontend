@@ -91,9 +91,17 @@
                           {{ formatWhen(m.date) }}
                         </p>
                         <p class="inline-flex items-center gap-2 text-xs font-bold text-prode-accent">
-                          <span class="rounded-full bg-prode-accent/15 px-2 py-0.5 text-[10px] uppercase tracking-wide"
-                            >Resultado</span
-                          >
+                          @if (isMatchFinished(m)) {
+                            <span
+                              class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                              >Finalizado</span
+                            >
+                          } @else {
+                            <span
+                              class="rounded-full bg-prode-accent/15 px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                              >Resultado</span
+                            >
+                          }
                           {{ formatMatchScore(m) }}
                         </p>
                       </div>
@@ -146,13 +154,7 @@
                             <lucide-icon name="zap" [size]="14" />
                             En curso
                           </span>
-                        } @else if (isMatchFinished(m)) {
-                          <span
-                            class="inline-flex items-center gap-1 rounded-full border border-prode-border bg-prode-elevated px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-prode-muted"
-                          >
-                            Finalizado
-                          </span>
-                        } @else {
+                        } @else if (!isMatchFinished(m)) {
                           <span
                             class="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-amber-200"
                           >
@@ -162,34 +164,52 @@
                         }
                       </div>
                     </div>
-                    @if (otherPredictionsForMatch(m).length > 0) {
-                      <div class="border-t border-prode-border/60 bg-prode-bg/40 px-4 py-3">
-                        <p class="mb-2 text-[10px] font-bold uppercase tracking-wider text-prode-muted">
-                          Predicciones del grupo
-                        </p>
-                        <ul class="space-y-1.5">
-                          @for (p of otherPredictionsForMatch(m); track p.id) {
-                            <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
-                              @if (p.user; as user) {
-                                <a
-                                  [routerLink]="['/participantes', user.id]"
-                                  class="text-link truncate text-white hover:text-prode-accent"
-                                >
-                                  {{ user.name }}
-                                </a>
-                              } @else {
-                                <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                    @if (otherPredictionsForMatch(m); as groupPredictions) {
+                      @if (groupPredictions.length > 0) {
+                        <div class="border-t border-prode-border/60 bg-prode-bg/40">
+                          <button
+                            type="button"
+                            (click)="togglePredictions(m.id)"
+                            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-prode-bg/60"
+                            [attr.aria-expanded]="isPredictionsExpanded(m.id)"
+                          >
+                            <span class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-prode-muted">
+                              <lucide-icon name="users" [size]="14" />
+                              Predicciones del grupo ({{ groupPredictions.length }})
+                            </span>
+                            <lucide-icon
+                              name="chevron-down"
+                              class="shrink-0 text-prode-muted transition-transform duration-200"
+                              [class.rotate-180]="isPredictionsExpanded(m.id)"
+                              [size]="16"
+                            />
+                          </button>
+                          @if (isPredictionsExpanded(m.id)) {
+                            <ul class="space-y-1.5 px-4 pb-3">
+                              @for (p of groupPredictions; track p.id) {
+                                <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
+                                  @if (p.user; as user) {
+                                    <a
+                                      [routerLink]="['/participantes', user.id]"
+                                      class="text-link truncate text-white hover:text-prode-accent"
+                                    >
+                                      {{ user.name }}
+                                    </a>
+                                  } @else {
+                                    <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                                  }
+                                  <span class="shrink-0 font-bold text-stone-200">
+                                    {{ p.homeGoals }} — {{ p.awayGoals }}
+                                    @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {
+                                      <span class="ml-2 text-prode-accent">+{{ p.points }} pts</span>
+                                    }
+                                  </span>
+                                </li>
                               }
-                              <span class="shrink-0 font-bold text-stone-200">
-                                {{ p.homeGoals }} — {{ p.awayGoals }}
-                                @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {
-                                  <span class="ml-2 text-prode-accent">+{{ p.points }} pts</span>
-                                }
-                              </span>
-                            </li>
+                            </ul>
                           }
-                        </ul>
-                      </div>
+                        </div>
+                      }
                     }
                   </li>
                 }

@@ -16,12 +16,17 @@ export interface LeaderboardRow {
   byPhase: Partial<Record<MatchPhase, number>>;
 }
 
+export interface LeaderboardResponse {
+  tournamentPicksVisible: boolean;
+  rows: LeaderboardRow[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class LeaderboardService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  getLeaderboard(): Observable<LeaderboardRow[]> {
-    return this.http.get<LeaderboardRow[]>(`${this.baseUrl}/leaderboard`);
+  getLeaderboard(): Observable<LeaderboardResponse> {
+    return this.http.get<LeaderboardResponse>(`${this.baseUrl}/leaderboard`);
   }
 }

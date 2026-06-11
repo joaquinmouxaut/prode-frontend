@@ -4,7 +4,8 @@
       <p class="eyebrow text-prode-gold">Ranking</p>
       <h2 class="font-display text-3xl tracking-wide text-stone-100">Tabla de posiciones</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
-        Puntos totales: partidos + campeón/goleador (50 pts c/u). Ver
+        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un jugador para ver su
+        historial fiscalizable. Ver
         <a routerLink="/reglas" class="font-semibold text-prode-accent hover:underline">reglas</a>.
       </p>
     </div>
@@ -45,12 +46,26 @@
               >
               <div>
                 <p class="font-semibold text-white">
-                  {{ row.user.name }}
+                  <a
+                    [routerLink]="['/participantes', row.user.id]"
+                    class="hover:text-prode-accent hover:underline"
+                  >
+                    {{ row.user.name }}
+                  </a>
                   @if (isMe(row)) {
                     <span class="ml-2 text-[10px] font-bold uppercase text-prode-accent">Vos</span>
                   }
                 </p>
                 <p class="text-xs text-prode-muted">{{ row.user.email }}</p>
+                @if (tournamentPicksVisible()) {
+                  <p class="mt-1 text-[11px] text-prode-muted">
+                    <span class="text-prode-muted">Campeón:</span>
+                    <span class="font-medium text-stone-200">{{ row.user.championPick || '—' }}</span>
+                    <span class="mx-1 text-prode-border">·</span>
+                    <span class="text-prode-muted">Goleador:</span>
+                    <span class="font-medium text-stone-200">{{ row.user.topScorerPick || '—' }}</span>
+                  </p>
+                }
               </div>
             </div>
             <div class="text-right">
@@ -90,6 +105,9 @@
           <tr class="border-b border-prode-border text-xs uppercase tracking-wider text-prode-muted">
             <th class="px-4 py-3 font-semibold">#</th>
             <th class="px-4 py-3 font-semibold">Jugador</th>
+            @if (tournamentPicksVisible()) {
+              <th class="px-4 py-3 font-semibold">Prode inicial</th>
+            }
             <th class="px-4 py-3 text-right font-semibold">Total</th>
             <th class="px-4 py-3 text-right font-semibold">Partidos</th>
             <th class="px-4 py-3 text-right font-semibold">Bonus</th>
@@ -117,7 +135,12 @@
                   }
                   <div>
                     <p class="font-medium text-white">
-                      {{ row.user.name }}
+                      <a
+                        [routerLink]="['/participantes', row.user.id]"
+                        class="hover:text-prode-accent hover:underline"
+                      >
+                        {{ row.user.name }}
+                      </a>
                       @if (isMe(row)) {
                         <span class="ml-2 rounded-full bg-prode-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase text-prode-accent"
                           >Vos</span
@@ -128,6 +151,18 @@
                   </div>
                 </div>
               </td>
+              @if (tournamentPicksVisible()) {
+                <td class="px-4 py-3 text-xs text-prode-muted">
+                  <p>
+                    <span class="font-semibold text-stone-300">Campeón:</span>
+                    {{ row.user.championPick || '—' }}
+                  </p>
+                  <p class="mt-1">
+                    <span class="font-semibold text-stone-300">Goleador:</span>
+                    {{ row.user.topScorerPick || '—' }}
+                  </p>
+                </td>
+              }
               <td class="px-4 py-3 text-right font-display text-xl text-prode-gold">{{ row.total }}</td>
               <td class="px-4 py-3 text-right font-semibold text-white">{{ row.matchPoints }}</td>
               <td class="px-4 py-3 text-right font-semibold text-prode-gold">

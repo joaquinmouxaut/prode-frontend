@@ -13,6 +13,8 @@ import type { Prediction } from '../../core/models/prediction.model';
 import {
   formatMatchScore,
   hasScoreableResult,
+  isMatchFinished,
+  isMatchInProgress,
   isMatchStarted,
 } from '../../core/utils/match-lifecycle';
 
@@ -54,6 +56,8 @@ export class Fixture {
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
 
   protected readonly isMatchStarted = isMatchStarted;
+  protected readonly isMatchInProgress = isMatchInProgress;
+  protected readonly isMatchFinished = isMatchFinished;
   protected readonly hasScoreableResult = hasScoreableResult;
   protected readonly formatMatchScore = formatMatchScore;
 

@@ -23,6 +23,11 @@ export const routes: Routes = [
           import('./features/leaderboard/leaderboard').then((m) => m.Leaderboard),
       },
       {
+        path: 'participantes/:id',
+        loadComponent: () =>
+          import('./features/participant/participant').then((m) => m.Participant),
+      },
+      {
         path: 'reglas',
         loadComponent: () => import('./features/rules/rules').then((m) => m.Rules),
       },

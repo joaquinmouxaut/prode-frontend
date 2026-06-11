@@ -78,6 +78,14 @@
                           <span class="truncate">{{ m.homeTeam }}</span>
                           <span class="text-prode-muted">vs</span>
                           <span class="truncate">{{ m.awayTeam }}</span>
+                          @if (isMatchInProgress(m)) {
+                            <span
+                              class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                            >
+                              <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
+                              En curso
+                            </span>
+                          }
                         </div>
                         <p class="text-xs text-prode-muted">
                           {{ formatWhen(m.date) }}
@@ -131,6 +139,19 @@
                             }
                             {{ predictionByMatchId().get(m.id) ? 'Actualizar' : 'Guardar' }}
                           </button>
+                        } @else if (isMatchInProgress(m)) {
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                          >
+                            <lucide-icon name="zap" [size]="14" />
+                            En curso
+                          </span>
+                        } @else if (isMatchFinished(m)) {
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full border border-prode-border bg-prode-elevated px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-prode-muted"
+                          >
+                            Finalizado
+                          </span>
                         } @else {
                           <span
                             class="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-amber-200"
@@ -149,7 +170,16 @@
                         <ul class="space-y-1.5">
                           @for (p of otherPredictionsForMatch(m); track p.id) {
                             <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
-                              <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                              @if (p.user?.id) {
+                                <a
+                                  [routerLink]="['/participantes', p.user.id]"
+                                  class="truncate font-medium text-white hover:text-prode-accent hover:underline"
+                                >
+                                  {{ p.user.name }}
+                                </a>
+                              } @else {
+                                <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                              }
                               <span class="shrink-0 font-bold text-stone-200">
                                 {{ p.homeGoals }} — {{ p.awayGoals }}
                                 @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {

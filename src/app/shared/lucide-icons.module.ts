@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import {
+  ArrowLeft,
   BookOpen,
   Calendar,
   CheckCircle,
@@ -24,6 +25,7 @@ import {
 @NgModule({
   imports: [
     LucideAngularModule.pick({
+      ArrowLeft,
       BookOpen,
       Calendar,
       CheckCircle,

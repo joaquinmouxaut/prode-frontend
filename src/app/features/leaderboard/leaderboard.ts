@@ -17,6 +17,7 @@ export class Leaderboard {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly rows = signal<LeaderboardRow[]>([]);
+  protected readonly tournamentPicksVisible = signal(false);
 
   constructor() {
     this.refresh();
@@ -26,8 +27,9 @@ export class Leaderboard {
     this.loading.set(true);
     this.error.set(null);
     this.leaderboardApi.getLeaderboard().subscribe({
-      next: (r) => {
-        this.rows.set(r);
+      next: (response) => {
+        this.rows.set(response.rows);
+        this.tournamentPicksVisible.set(response.tournamentPicksVisible);
         this.loading.set(false);
       },
       error: () => {

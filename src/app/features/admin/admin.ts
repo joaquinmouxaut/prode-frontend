@@ -4,6 +4,7 @@ import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
 import { MATCH_PHASE_LABELS } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
+import { isMatchFinalized } from '../../core/utils/match-lifecycle';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -36,7 +37,8 @@ export class Admin {
   protected readonly matches = signal<Match[]>([]);
   protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
   protected readonly savingId = signal<number | null>(null);
-  protected readonly unlockingId = signal<number | null>(null);
+  protected readonly finalizingId = signal<number | null>(null);
+  protected readonly unfinalizingId = signal<number | null>(null);
   protected readonly importingFixture = signal(false);
   protected readonly syncingNow = signal(false);
   protected readonly syncStatus = signal<FixtureSyncStatusResponse | null>(null);
@@ -52,6 +54,7 @@ export class Admin {
   protected readonly pendingCount = computed(() => this.matches().filter(isMatchPending).length);
 
   protected readonly isMatchPending = isMatchPending;
+  protected readonly isMatchFinalized = isMatchFinalized;
 
   constructor() {
     this.refresh();
@@ -137,7 +140,6 @@ export class Admin {
                   ...m,
                   homeGoals: d.home,
                   awayGoals: d.away,
-                  manualOverride: true,
                   resultSource: 'ADMIN',
                 }
               : m,
@@ -203,18 +205,53 @@ export class Admin {
     });
   }
 
-  unlockSync(match: Match): void {
-    this.unlockingId.set(match.id);
-    this.adminApi.unlockMatchSync(match.id).subscribe({
-      next: () => {
-        this.unlockingId.set(null);
+  finalizeMatch(match: Match): void {
+    this.finalizingId.set(match.id);
+    this.adminApi.finalizeMatch(match.id).subscribe({
+      next: (res) => {
         this.matches.update((list) =>
-          list.map((m) => (m.id === match.id ? { ...m, manualOverride: false } : m)),
+          list.map((m) =>
+            m.id === match.id
+              ? {
+                  ...m,
+                  finalizedAt: res.finalizedAt,
+                  externalStatus: 'FINISHED',
+                }
+              : m,
+          ),
         );
-        this.toast.success('Override manual desactivado para este partido.');
+        this.finalizingId.set(null);
+        this.refreshSyncStatus();
+        this.toast.success(
+          `Partido finalizado. Recalculadas ${res.recalculatedPredictions} predicciones.`,
+        );
       },
       error: () => {
-        this.unlockingId.set(null);
+        this.finalizingId.set(null);
+      },
+    });
+  }
+
+  unfinalizeMatch(match: Match): void {
+    this.unfinalizingId.set(match.id);
+    this.adminApi.unfinalizeMatch(match.id).subscribe({
+      next: () => {
+        this.matches.update((list) =>
+          list.map((m) =>
+            m.id === match.id
+              ? {
+                  ...m,
+                  finalizedAt: null,
+                }
+              : m,
+          ),
+        );
+        this.unfinalizingId.set(null);
+        this.refreshSyncStatus();
+        this.toast.success('Finalización revertida. Podés volver a editar el resultado.');
+      },
+      error: () => {
+        this.unfinalizingId.set(null);
       },
     });
   }

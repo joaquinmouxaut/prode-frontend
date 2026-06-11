@@ -14,6 +14,7 @@ export interface Match {
   resultSource?: 'ADMIN' | 'API' | 'IMPORT' | null;
   manualOverride?: boolean;
   lastSyncedAt?: string | null;
+  finalizedAt?: string | null;
 }
 
 export interface CreateMatchDto {

@@ -6,7 +6,7 @@
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
         Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un jugador para ver su
         historial fiscalizable. Ver
-        <a routerLink="/reglas" class="font-semibold text-prode-accent hover:underline">reglas</a>.
+        <a routerLink="/reglas" class="text-link">reglas</a>.
       </p>
     </div>
     <button
@@ -48,7 +48,7 @@
                 <p class="font-semibold text-white">
                   <a
                     [routerLink]="['/participantes', row.user.id]"
-                    class="hover:text-prode-accent hover:underline"
+                    class="text-link text-white hover:text-prode-accent"
                   >
                     {{ row.user.name }}
                   </a>
@@ -137,7 +137,7 @@
                     <p class="font-medium text-white">
                       <a
                         [routerLink]="['/participantes', row.user.id]"
-                        class="hover:text-prode-accent hover:underline"
+                        class="text-link text-white hover:text-prode-accent"
                       >
                         {{ row.user.name }}
                       </a>

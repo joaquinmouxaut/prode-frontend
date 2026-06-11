@@ -15,6 +15,13 @@ export interface SetMatchResultResponse {
   skipped?: string;
 }
 
+export interface FinalizeMatchResponse {
+  matchId: number;
+  finalizedAt: string;
+  recalculatedPredictions: number;
+  recalculatedUsers: number;
+}
+
 export interface FixtureImportResponse {
   importedMatches: number;
   createdMatches: number;
@@ -68,6 +75,20 @@ export class AdminService {
     return this.http.patch<SetMatchResultResponse>(
       `${this.baseUrl}/admin/matches/${matchId}/result`,
       dto,
+    );
+  }
+
+  finalizeMatch(matchId: number): Observable<FinalizeMatchResponse> {
+    return this.http.post<FinalizeMatchResponse>(
+      `${this.baseUrl}/admin/matches/${matchId}/finalize`,
+      {},
+    );
+  }
+
+  unfinalizeMatch(matchId: number): Observable<{ matchId: number }> {
+    return this.http.post<{ matchId: number }>(
+      `${this.baseUrl}/admin/matches/${matchId}/unfinalize`,
+      {},
     );
   }
 

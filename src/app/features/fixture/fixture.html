@@ -27,7 +27,7 @@
       </span>
       <a
         routerLink="/setup"
-        class="touch-target inline-flex min-h-11 items-center gap-1 text-xs font-bold uppercase tracking-wide text-prode-gold"
+        class="text-link touch-target inline-flex min-h-11 items-center gap-1 text-xs uppercase tracking-wide text-prode-gold"
       >
         Ir
         <lucide-icon name="chevron-right" [size]="14" />
@@ -173,7 +173,7 @@
                               @if (p.user; as user) {
                                 <a
                                   [routerLink]="['/participantes', user.id]"
-                                  class="truncate font-medium text-white hover:text-prode-accent hover:underline"
+                                  class="text-link truncate text-white hover:text-prode-accent"
                                 >
                                   {{ user.name }}
                                 </a>

@@ -28,7 +28,7 @@ export class Leaderboard {
     this.error.set(null);
     this.leaderboardApi.getLeaderboard().subscribe({
       next: (response) => {
-        this.rows.set(response.rows);
+        this.rows.set(response.rows ?? []);
         this.tournamentPicksVisible.set(response.tournamentPicksVisible);
         this.loading.set(false);
       },

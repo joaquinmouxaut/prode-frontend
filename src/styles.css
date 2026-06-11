@@ -26,6 +26,25 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+
+  a[href],
+  button:not(:disabled),
+  [role='button']:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  a > lucide-icon,
+  button > lucide-icon,
+  a svg,
+  button svg {
+    pointer-events: none;
+  }
 }
 
 @layer utilities {
@@ -56,11 +75,19 @@
   }
 
   .touch-target {
-    @apply min-h-11 min-w-11;
+    @apply min-h-11 min-w-11 cursor-pointer;
   }
 
   .btn-primary {
-    @apply inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-amber-300 px-4 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-amber-900/25 transition hover:brightness-110 disabled:opacity-50 sm:w-auto;
+    @apply inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-accent to-amber-300 px-4 py-3 text-sm font-bold uppercase tracking-wide text-prode-bg shadow-lg shadow-amber-900/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto;
+  }
+
+  .nav-link {
+    @apply cursor-pointer rounded-full px-3 py-2 text-sm font-medium text-prode-muted transition hover:text-white;
+  }
+
+  .text-link {
+    @apply cursor-pointer font-semibold text-prode-accent transition hover:underline;
   }
 
   .input-field {

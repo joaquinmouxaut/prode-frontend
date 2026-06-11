@@ -74,7 +74,8 @@
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
       <h2 class="font-display text-3xl tracking-wide text-white">Resultados</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
-        Cargá o corregí el marcador oficial. El backend recalcula puntos y ranking en cada guardado.
+        Cargá o corregí el marcador oficial. Manual y sync API conviven hasta que finalices el partido.
+        El backend recalcula puntos y ranking en cada guardado.
         @if (pendingCount() > 0) {
           <span class="text-amber-200/90">{{ pendingCount() }} pendiente(s).</span>
         }
@@ -121,7 +122,12 @@
                 {{ formatWhen(m.date) }} · {{ MATCH_PHASE_LABELS[m.phase] }}
               </p>
               <div class="flex flex-wrap gap-2 pt-1">
-                @if (isMatchPending(m)) {
+                @if (isMatchFinalized(m)) {
+                  <span
+                    class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
+                    >Finalizado</span
+                  >
+                } @else if (isMatchPending(m)) {
                   <span
                     class="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
                     >Pendiente</span
@@ -130,12 +136,6 @@
                   <span
                     class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
                     >Con resultado</span
-                  >
-                }
-                @if (m.manualOverride) {
-                  <span
-                    class="rounded-full border border-prode-border bg-prode-elevated px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-300"
-                    >Override manual</span
                   >
                 }
               </div>
@@ -150,7 +150,8 @@
                   <input
                     type="number"
                     min="0"
-                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2"
+                    [disabled]="isMatchFinalized(m)"
+                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
                     [ngModel]="draft()[m.id]?.home ?? 0"
                     (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
                   />
@@ -162,39 +163,54 @@
                   <input
                     type="number"
                     min="0"
-                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2"
+                    [disabled]="isMatchFinalized(m)"
+                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
                     [ngModel]="draft()[m.id]?.away ?? 0"
                     (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
                   />
                 </label>
               </div>
               <div class="flex flex-col gap-2 sm:flex-row">
-                <button
-                  type="button"
-                  (click)="saveResult(m)"
-                  [disabled]="savingId() === m.id"
-                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
-                >
-                  @if (savingId() === m.id) {
-                    <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                  }
-                  @if (isMatchPending(m)) {
-                    Cargar resultado
-                  } @else {
-                    Actualizar resultado
-                  }
-                </button>
-                @if (m.manualOverride) {
+                @if (!isMatchFinalized(m)) {
                   <button
                     type="button"
-                    (click)="unlockSync(m)"
-                    [disabled]="unlockingId() === m.id"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-muted hover:text-white disabled:opacity-50"
+                    (click)="saveResult(m)"
+                    [disabled]="savingId() === m.id"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
                   >
-                    @if (unlockingId() === m.id) {
+                    @if (savingId() === m.id) {
                       <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
                     }
-                    Reanudar sync
+                    @if (isMatchPending(m)) {
+                      Cargar resultado
+                    } @else {
+                      Actualizar resultado
+                    }
+                  </button>
+                  @if (!isMatchPending(m)) {
+                    <button
+                      type="button"
+                      (click)="finalizeMatch(m)"
+                      [disabled]="finalizingId() === m.id"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
+                    >
+                      @if (finalizingId() === m.id) {
+                        <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                      }
+                      Finalizar partido
+                    </button>
+                  }
+                } @else {
+                  <button
+                    type="button"
+                    (click)="unfinalizeMatch(m)"
+                    [disabled]="unfinalizingId() === m.id"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:opacity-50"
+                  >
+                    @if (unfinalizingId() === m.id) {
+                      <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
+                    }
+                    Quitar finalización
                   </button>
                 }
               </div>

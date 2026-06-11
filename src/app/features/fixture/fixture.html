@@ -170,12 +170,12 @@
                         <ul class="space-y-1.5">
                           @for (p of otherPredictionsForMatch(m); track p.id) {
                             <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
-                              @if (p.user?.id) {
+                              @if (p.user; as user) {
                                 <a
-                                  [routerLink]="['/participantes', p.user.id]"
+                                  [routerLink]="['/participantes', user.id]"
                                   class="truncate font-medium text-white hover:text-prode-accent hover:underline"
                                 >
-                                  {{ p.user.name }}
+                                  {{ user.name }}
                                 </a>
                               } @else {
                                 <span class="truncate font-medium text-white">{{ p.user?.name }}</span>

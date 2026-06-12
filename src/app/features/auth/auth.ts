@@ -60,7 +60,7 @@ export class Auth implements OnInit {
     this.error.set(null);
     const { email, password } = this.loginForm.getRawValue();
     this.auth.login({ email, password }).subscribe({
-      next: (user) => this.afterAuth(user),
+      next: () => this.afterAuth(),
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
           this.error.set('Email o contraseña incorrectos.');
@@ -82,7 +82,7 @@ export class Auth implements OnInit {
     this.error.set(null);
     const { name, email, password } = this.registerForm.getRawValue();
     this.auth.register({ name, email, password }).subscribe({
-      next: (user) => this.afterAuth(user),
+      next: () => this.afterAuth(),
       error: (err: HttpErrorResponse) => {
         if (err.status === 409) {
           this.error.set('Ese email ya está registrado.');
@@ -101,12 +101,8 @@ export class Auth implements OnInit {
     }
   }
 
-  private afterAuth(user: { championPick?: string | null; topScorerPick?: string | null }): void {
-    if (this.auth.needsInitialSetup(user)) {
-      void this.router.navigateByUrl('/setup');
-    } else {
-      void this.router.navigateByUrl('/fixtures');
-    }
+  private afterAuth(): void {
+    void this.router.navigateByUrl('/fixtures');
   }
 }
 

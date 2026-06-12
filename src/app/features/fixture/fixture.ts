@@ -1,5 +1,14 @@
+import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  inject,
+  Injector,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -10,6 +19,12 @@ import { PredictionsService } from '../../core/services/predictions.service';
 import { MATCH_PHASE_LABELS, type MatchPhase } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
+import {
+  argentinaDateKey,
+  argentinaTodayDateKey,
+  formatArgentinaDateTime,
+  formatArgentinaDayHeading,
+} from '../../core/utils/argentina-datetime';
 import {
   formatMatchScore,
   hasScoreableResult,
@@ -38,8 +53,13 @@ interface FixtureDayGroup {
 })
 export class Fixture {
   private readonly predictionsApi = inject(PredictionsService);
+  private readonly injector = inject(Injector);
+  private readonly platformId = inject(PLATFORM_ID);
   protected readonly auth = inject(AuthService);
   protected readonly branding = BRANDING;
+
+  private dayExpansionInitialized = false;
+  private scrolledToToday = false;
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
 
@@ -53,8 +73,10 @@ export class Fixture {
   protected readonly savingId = signal<number | null>(null);
   protected readonly rowError = signal<string | null>(null);
   protected readonly expandedPredictionMatchIds = signal<Set<number>>(new Set());
+  protected readonly expandedDayKeys = signal<Set<string>>(new Set());
 
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
+  protected readonly todayDateKey = computed(() => argentinaTodayDateKey());
 
   protected readonly isMatchStarted = isMatchStarted;
   protected readonly isMatchInProgress = isMatchInProgress;
@@ -97,7 +119,15 @@ export class Fixture {
         }
         this.predictionByMatchId.set(map);
         this.draft.set(draft);
+        if (!this.dayExpansionInitialized) {
+          this.initDayExpansion(sorted);
+          this.dayExpansionInitialized = true;
+        }
         this.loading.set(false);
+        if (!this.scrolledToToday) {
+          this.scheduleScrollToToday();
+          this.scrolledToToday = true;
+        }
       },
       error: () => {
         this.loadError.set('No pudimos cargar el fixture. ¿Está corriendo el backend?');
@@ -119,14 +149,35 @@ export class Fixture {
   }
 
   formatWhen(iso: string): string {
-    try {
-      return new Intl.DateTimeFormat('es-AR', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(new Date(iso));
-    } catch {
-      return iso;
-    }
+    return formatArgentinaDateTime(iso);
+  }
+
+  myPrediction(match: Match): Prediction | undefined {
+    return this.predictionByMatchId().get(match.id);
+  }
+
+  matchCountForDay(group: FixtureDayGroup): number {
+    return group.sections.reduce((total, section) => total + section.matches.length, 0);
+  }
+
+  isDayExpanded(dateKey: string): boolean {
+    return this.expandedDayKeys().has(dateKey);
+  }
+
+  isTodayDay(dateKey: string): boolean {
+    return dateKey === this.todayDateKey();
+  }
+
+  toggleDay(dateKey: string): void {
+    this.expandedDayKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(dateKey)) {
+        next.delete(dateKey);
+      } else {
+        next.add(dateKey);
+      }
+      return next;
+    });
   }
 
   clampGoals(raw: string): number {
@@ -218,10 +269,49 @@ export class Fixture {
     });
   }
 
+  private initDayExpansion(matches: Match[]): void {
+    const today = argentinaTodayDateKey();
+    const dayKeys = new Set(matches.map((m) => argentinaDateKey(m.date)));
+    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set());
+  }
+
+  private scheduleScrollToToday(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    afterNextRender(
+      () => {
+        const targetKey = this.resolveScrollDayKey();
+        if (!targetKey) {
+          return;
+        }
+        document.getElementById(`fixture-day-${targetKey}`)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /** Día de hoy si hay partidos; si no, el próximo con fixture o el último pasado. */
+  private resolveScrollDayKey(): string | null {
+    const groups = this.groups();
+    if (groups.length === 0) {
+      return null;
+    }
+    const today = argentinaTodayDateKey();
+    if (groups.some((group) => group.dateKey === today)) {
+      return today;
+    }
+    const upcoming = groups.find((group) => group.dateKey > today);
+    return upcoming?.dateKey ?? groups[groups.length - 1]?.dateKey ?? null;
+  }
+
   private buildGroups(matches: Match[]): FixtureDayGroup[] {
     const byDate = new Map<string, Map<MatchPhase, Match[]>>();
     for (const m of matches) {
-      const dateKey = m.date.slice(0, 10);
+      const dateKey = argentinaDateKey(m.date);
       if (!byDate.has(dateKey)) {
         byDate.set(dateKey, new Map());
       }
@@ -231,11 +321,6 @@ export class Fixture {
       }
       inner.get(m.phase)!.push(m);
     }
-    const formatter = new Intl.DateTimeFormat('es-AR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    });
     const result: FixtureDayGroup[] = [];
     for (const [dateKey, phaseMap] of byDate) {
       const sections: FixtureSection[] = [];
@@ -247,8 +332,7 @@ export class Fixture {
         });
       }
       sections.sort((a, b) => a.phase.localeCompare(b.phase));
-      const heading = formatter.format(new Date(dateKey + 'T12:00:00'));
-      result.push({ dateKey, heading, sections });
+      result.push({ dateKey, heading: formatArgentinaDayHeading(dateKey), sections });
     }
     result.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
     return result;

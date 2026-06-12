@@ -53,6 +53,17 @@ export class AuthService {
     );
   }
 
+  fetchProfile(id: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/users/${id}`).pipe(
+      tap((user) => {
+        if (this.currentUser()?.id === user.id) {
+          localStorage.setItem(STORAGE_USER, JSON.stringify(user));
+          this.currentUser.set(user);
+        }
+      }),
+    );
+  }
+
   updateProfile(id: number, dto: UpdateUserDto): Observable<User> {
     return this.http.patch<User>(`${this.baseUrl}/users/${id}`, dto).pipe(
       tap((user) => {

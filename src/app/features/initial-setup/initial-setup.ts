@@ -32,9 +32,9 @@ export class InitialSetup {
   constructor() {
     const u = this.auth.currentUser();
     if (u) {
-      this.form.patchValue({
-        championPick: u.championPick ?? '',
-        topScorerPick: u.topScorerPick ?? '',
+      this.patchPicks(u.championPick, u.topScorerPick);
+      this.auth.fetchProfile(u.id).subscribe({
+        next: (profile) => this.patchPicks(profile.championPick, profile.topScorerPick),
       });
     }
 
@@ -51,6 +51,13 @@ export class InitialSetup {
         this.loadingStatus.set(false);
         this.error.set('No pudimos verificar si el torneo ya comenzó.');
       },
+    });
+  }
+
+  private patchPicks(championPick?: string | null, topScorerPick?: string | null): void {
+    this.form.patchValue({
+      championPick: championPick ?? '',
+      topScorerPick: topScorerPick ?? '',
     });
   }
 

@@ -1,18 +1,17 @@
-<section class="space-y-6">
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<section class="space-y-5">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <p class="eyebrow text-prode-gold">Ranking</p>
-      <h2 class="font-display text-3xl tracking-wide text-stone-100">Tabla de posiciones</h2>
-      <p class="mt-1 max-w-xl text-sm text-prode-muted">
-        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un jugador para ver su
-        historial fiscalizable. Ver
-        <a routerLink="/reglas" class="text-link">reglas</a>.
+      <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">Tabla de posiciones</h2>
+      <p class="mt-0.5 max-w-xl text-sm text-prode-muted">
+        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un jugador para ver su historial.
+        Ver <a routerLink="/reglas" class="text-link">reglas</a>.
       </p>
     </div>
     <button
       type="button"
       (click)="refresh()"
-      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-full border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
+      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar
@@ -20,7 +19,7 @@
   </div>
 
   @if (loading()) {
-    <div class="flex flex-col items-center justify-center gap-3 py-20 text-prode-muted">
+    <div class="flex flex-col items-center justify-center gap-3 py-16 text-prode-muted">
       <lucide-icon name="loader-2" class="animate-spin text-prode-gold" [size]="36" />
       <p class="text-sm">Calculando tabla…</p>
     </div>
@@ -29,90 +28,29 @@
   } @else if (rows().length === 0) {
     <div class="card-sport p-8 text-center text-prode-muted">Todavía no hay usuarios o puntos.</div>
   } @else {
-    <!-- Móvil: tarjetas -->
-    <ul class="space-y-3 md:hidden">
-      @for (row of rows(); track trackRow($index, row); let i = $index) {
-        <li
-          class="card-sport p-4"
-          [class.ring-1]="isMe(row)"
-          [class.ring-prode-accent]="isMe(row)"
-          [class.glow-accent]="i === 0"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <span
-                class="flex h-9 w-9 items-center justify-center rounded-xl bg-prode-elevated text-sm font-black text-white"
-                >{{ i + 1 }}</span
-              >
-              <div>
-                <p class="font-semibold text-white">
-                  <a
-                    [routerLink]="['/participantes', row.user.id]"
-                    class="text-link text-white hover:text-prode-accent"
-                  >
-                    {{ row.user.name }}
-                  </a>
-                  @if (isMe(row)) {
-                    <span class="ml-2 text-[10px] font-bold uppercase text-prode-accent">Vos</span>
-                  }
-                </p>
-                <p class="text-xs text-prode-muted">{{ row.user.email }}</p>
-                @if (tournamentPicksVisible()) {
-                  <p class="mt-1 text-[11px] text-prode-muted">
-                    <span class="text-prode-muted">Campeón:</span>
-                    <span class="font-medium text-stone-200">{{ row.user.championPick || '—' }}</span>
-                    <span class="mx-1 text-prode-border">·</span>
-                    <span class="text-prode-muted">Goleador:</span>
-                    <span class="font-medium text-stone-200">{{ row.user.topScorerPick || '—' }}</span>
-                  </p>
-                }
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="font-display text-2xl text-prode-gold">{{ row.total }}</p>
-              <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">pts</p>
-            </div>
-          </div>
-          <div class="mt-4 grid grid-cols-2 gap-2 text-center text-xs">
-            <div class="rounded-xl bg-prode-bg/80 py-2">
-              <p class="text-prode-muted">Partidos</p>
-              <p class="text-lg font-bold text-white">{{ row.matchPoints }}</p>
-            </div>
-            <div class="rounded-xl bg-prode-bg/80 py-2">
-              <p class="text-prode-muted">Grupos / Knockout</p>
-              <p class="text-lg font-bold text-white">{{ row.groupsPoints }} / {{ row.knockoutPoints }}</p>
-            </div>
-            @if (row.championPoints > 0 || row.topScorerPoints > 0) {
-              <div class="col-span-2 rounded-xl bg-prode-gold/10 py-2 text-prode-gold">
-                Bonus torneo: +{{ row.championPoints + row.topScorerPoints }}
-                @if (row.championPoints > 0) {
-                  <span class="text-prode-muted"> (campeón {{ row.championPoints }})</span>
-                }
-                @if (row.topScorerPoints > 0) {
-                  <span class="text-prode-muted"> (goleador {{ row.topScorerPoints }})</span>
-                }
-              </div>
-            }
-          </div>
-        </li>
-      }
-    </ul>
-
-    <!-- Desktop -->
-    <div class="card-sport hidden overflow-x-auto md:block">
-      <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+    <div class="card-sport overflow-x-auto">
+      <table class="leaderboard-table w-full min-w-[34rem] border-collapse text-left text-sm">
         <thead>
-          <tr class="border-b border-prode-border text-xs uppercase tracking-wider text-prode-muted">
-            <th class="px-4 py-3 font-semibold">#</th>
-            <th class="px-4 py-3 font-semibold">Jugador</th>
+          <tr class="border-b border-prode-border text-[10px] uppercase tracking-wider text-prode-muted md:text-xs">
+            <th class="px-2 py-2 font-semibold md:px-4 md:py-3">#</th>
+            <th class="px-2 py-2 font-semibold md:px-4 md:py-3">Jugador</th>
             @if (tournamentPicksVisible()) {
-              <th class="px-4 py-3 font-semibold">Prode inicial</th>
+              <th class="hidden px-4 py-3 font-semibold lg:table-cell">Prode inicial</th>
             }
-            <th class="px-4 py-3 text-right font-semibold">Total</th>
-            <th class="px-4 py-3 text-right font-semibold">Partidos</th>
-            <th class="px-4 py-3 text-right font-semibold">Bonus</th>
-            <th class="px-4 py-3 text-right font-semibold">Grupos</th>
-            <th class="px-4 py-3 text-right font-semibold">Eliminatorias</th>
+            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">Total</th>
+            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
+              <span class="lg:hidden">Part.</span>
+              <span class="hidden lg:inline">Partidos</span>
+            </th>
+            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">Bonus</th>
+            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
+              <span class="lg:hidden">Gp.</span>
+              <span class="hidden lg:inline">Grupos</span>
+            </th>
+            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
+              <span class="lg:hidden">Elim.</span>
+              <span class="hidden lg:inline">Eliminatorias</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -121,20 +59,20 @@
               class="border-b border-prode-border/60 transition hover:bg-prode-elevated/40"
               [class.bg-prode-accent/5]="isMe(row)"
             >
-              <td class="px-4 py-3 font-bold text-white">{{ i + 1 }}</td>
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-2">
+              <td class="px-2 py-2 font-bold text-white md:px-4 md:py-3">{{ i + 1 }}</td>
+              <td class="px-2 py-2 md:px-4 md:py-3">
+                <div class="flex items-center gap-1.5 md:gap-2">
                   @if (i === 0) {
-                    <lucide-icon name="trophy" class="text-prode-gold" [size]="18" />
+                    <lucide-icon name="trophy" class="shrink-0 text-prode-gold" [size]="16" />
                   } @else if (i === 1) {
-                    <lucide-icon name="medal" class="text-slate-300" [size]="18" />
+                    <lucide-icon name="medal" class="shrink-0 text-slate-300" [size]="16" />
                   } @else if (i === 2) {
-                    <lucide-icon name="medal" class="text-amber-700" [size]="18" />
+                    <lucide-icon name="medal" class="shrink-0 text-amber-700" [size]="16" />
                   } @else {
-                    <lucide-icon name="users" class="text-prode-muted" [size]="18" />
+                    <lucide-icon name="users" class="shrink-0 text-prode-muted" [size]="16" />
                   }
-                  <div>
-                    <p class="font-medium text-white">
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-white">
                       <a
                         [routerLink]="['/participantes', row.user.id]"
                         class="text-link text-white hover:text-prode-accent"
@@ -142,17 +80,17 @@
                         {{ row.user.name }}
                       </a>
                       @if (isMe(row)) {
-                        <span class="ml-2 rounded-full bg-prode-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase text-prode-accent"
+                        <span
+                          class="ml-1.5 rounded bg-prode-accent/20 px-1.5 py-px text-[9px] font-bold uppercase text-prode-accent md:ml-2 md:px-2 md:py-0.5 md:text-[10px]"
                           >Vos</span
                         >
                       }
                     </p>
-                    <p class="text-xs text-prode-muted">{{ row.user.email }}</p>
                   </div>
                 </div>
               </td>
               @if (tournamentPicksVisible()) {
-                <td class="px-4 py-3 text-xs text-prode-muted">
+                <td class="hidden px-4 py-3 text-xs text-prode-muted lg:table-cell">
                   <p>
                     <span class="font-semibold text-stone-300">Campeón:</span>
                     {{ row.user.championPick || '—' }}
@@ -163,17 +101,25 @@
                   </p>
                 </td>
               }
-              <td class="px-4 py-3 text-right font-display text-xl text-prode-gold">{{ row.total }}</td>
-              <td class="px-4 py-3 text-right font-semibold text-white">{{ row.matchPoints }}</td>
-              <td class="px-4 py-3 text-right font-semibold text-prode-gold">
+              <td class="px-2 py-2 text-right font-display text-base text-prode-gold md:px-4 md:py-3 md:text-xl">
+                {{ row.total }}
+              </td>
+              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
+                {{ row.matchPoints }}
+              </td>
+              <td class="px-2 py-2 text-right font-semibold text-prode-gold md:px-4 md:py-3">
                 @if (row.championPoints + row.topScorerPoints > 0) {
                   +{{ row.championPoints + row.topScorerPoints }}
                 } @else {
                   —
                 }
               </td>
-              <td class="px-4 py-3 text-right font-semibold text-white">{{ row.groupsPoints }}</td>
-              <td class="px-4 py-3 text-right font-semibold text-white">{{ row.knockoutPoints }}</td>
+              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
+                {{ row.groupsPoints }}
+              </td>
+              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
+                {{ row.knockoutPoints }}
+              </td>
             </tr>
           }
         </tbody>

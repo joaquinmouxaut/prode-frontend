@@ -20,10 +20,10 @@ import { MATCH_PHASE_LABELS, type MatchPhase } from '../../core/models/match-pha
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import {
-  argentinaDateKey,
-  argentinaTodayDateKey,
-  formatArgentinaDateTime,
-  formatArgentinaDayHeading,
+  fixtureGroupDateKey,
+  fixtureGroupTodayDateKey,
+  formatArgentinaMatchTime,
+  formatFixtureGroupDayHeading,
 } from '../../core/utils/argentina-datetime';
 import {
   formatMatchScore,
@@ -76,7 +76,7 @@ export class Fixture {
   protected readonly expandedDayKeys = signal<Set<string>>(new Set());
 
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
-  protected readonly todayDateKey = computed(() => argentinaTodayDateKey());
+  protected readonly todayDateKey = computed(() => fixtureGroupTodayDateKey());
 
   protected readonly isMatchStarted = isMatchStarted;
   protected readonly isMatchInProgress = isMatchInProgress;
@@ -149,7 +149,7 @@ export class Fixture {
   }
 
   formatWhen(iso: string): string {
-    return formatArgentinaDateTime(iso);
+    return formatArgentinaMatchTime(iso);
   }
 
   myPrediction(match: Match): Prediction | undefined {
@@ -270,8 +270,8 @@ export class Fixture {
   }
 
   private initDayExpansion(matches: Match[]): void {
-    const today = argentinaTodayDateKey();
-    const dayKeys = new Set(matches.map((m) => argentinaDateKey(m.date)));
+    const today = fixtureGroupTodayDateKey();
+    const dayKeys = new Set(matches.map((m) => fixtureGroupDateKey(m.date)));
     this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set());
   }
 
@@ -300,7 +300,7 @@ export class Fixture {
     if (groups.length === 0) {
       return null;
     }
-    const today = argentinaTodayDateKey();
+    const today = fixtureGroupTodayDateKey();
     if (groups.some((group) => group.dateKey === today)) {
       return today;
     }
@@ -311,7 +311,7 @@ export class Fixture {
   private buildGroups(matches: Match[]): FixtureDayGroup[] {
     const byDate = new Map<string, Map<MatchPhase, Match[]>>();
     for (const m of matches) {
-      const dateKey = argentinaDateKey(m.date);
+      const dateKey = fixtureGroupDateKey(m.date);
       if (!byDate.has(dateKey)) {
         byDate.set(dateKey, new Map());
       }
@@ -332,7 +332,7 @@ export class Fixture {
         });
       }
       sections.sort((a, b) => a.phase.localeCompare(b.phase));
-      result.push({ dateKey, heading: formatArgentinaDayHeading(dateKey), sections });
+      result.push({ dateKey, heading: formatFixtureGroupDayHeading(dateKey), sections });
     }
     result.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
     return result;

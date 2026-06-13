@@ -1,0 +1,18 @@
+.leaderboard-table {
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  td:nth-child(2) {
+    white-space: normal;
+    min-width: 6.5rem;
+    max-width: 9rem;
+  }
+
+  @media (min-width: 640px) {
+    td:nth-child(2) {
+      max-width: 14rem;
+    }
+  }
+}

@@ -7,6 +7,7 @@ import {
   ParticipantsService,
   type ParticipantProfile,
 } from '../../core/services/participants.service';
+import { formatArgentinaDateTime } from '../../core/utils/argentina-datetime';
 import {
   formatMatchScore,
   hasScoreableResult,
@@ -54,13 +55,6 @@ export class Participant {
   }
 
   formatWhen(iso: string): string {
-    try {
-      return new Intl.DateTimeFormat('es-AR', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(new Date(iso));
-    } catch {
-      return iso;
-    }
+    return formatArgentinaDateTime(iso);
   }
 }

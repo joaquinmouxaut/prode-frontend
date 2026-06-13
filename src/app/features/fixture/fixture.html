@@ -10,7 +10,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
+      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar
@@ -19,7 +19,7 @@
 
   @if (auth.needsInitialSetup(auth.currentUser())) {
     <div
-      class="flex flex-col gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-100 sm:flex-row sm:items-center sm:justify-between"
+      class="flex flex-col gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-100 sm:flex-row sm:items-center sm:justify-between"
     >
       <span class="inline-flex items-center gap-2">
         <lucide-icon name="shield" class="text-amber-300" [size]="18" />
@@ -36,7 +36,7 @@
   }
 
   @if (rowError()) {
-    <p class="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+    <p class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
       {{ rowError() }}
     </p>
   }
@@ -96,8 +96,8 @@
                   </p>
                   <ul class="space-y-2">
                     @for (m of sec.matches; track trackMatch($index, m)) {
-                      <li class="overflow-hidden rounded-xl border border-prode-border/70 bg-prode-bg/30">
-                        <div class="flex items-start gap-2 p-3">
+                      <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
+                        <div class="flex items-start gap-2 p-2.5">
                           <div class="min-w-0 flex-1 space-y-1">
                             <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                               <span class="truncate text-sm font-semibold text-white">{{ m.homeTeam }}</span>
@@ -113,7 +113,7 @@
                               }
                             </div>
                             <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-prode-muted">
-                              <span>{{ formatWhen(m.date) }}</span>
+                              <span>{{ formatWhen(m.date) }} hs (ARG)</span>
                               @if (isMatchFinished(m)) {
                                 <span class="text-emerald-300/90">· Final</span>
                               } @else if (isMatchStarted(m)) {
@@ -126,32 +126,44 @@
                           </div>
 
                           @if (!isMatchStarted(m)) {
-                            <div class="flex shrink-0 items-center gap-1.5">
-                              <label class="w-11">
+                            <div class="flex shrink-0 items-end gap-1">
+                              <label class="w-10">
                                 <span class="mb-0.5 block text-center text-[9px] font-bold uppercase text-prode-muted"
                                   >L</span
                                 >
                                 <input
                                   type="number"
                                   min="0"
-                                  class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1.5 text-center text-base font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                                  class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
                                   [ngModel]="draft()[m.id]?.home ?? 0"
                                   (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
                                 />
                               </label>
-                              <span class="pt-4 text-xs font-bold text-prode-muted">—</span>
-                              <label class="w-11">
+                              <span class="pb-1.5 text-xs font-bold text-prode-muted">—</span>
+                              <label class="w-10">
                                 <span class="mb-0.5 block text-center text-[9px] font-bold uppercase text-prode-muted"
                                   >V</span
                                 >
                                 <input
                                   type="number"
                                   min="0"
-                                  class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1.5 text-center text-base font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
+                                  class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-prode-accent/30 focus:ring-2"
                                   [ngModel]="draft()[m.id]?.away ?? 0"
                                   (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
                                 />
                               </label>
+                              <button
+                                type="button"
+                                (click)="savePrediction(m)"
+                                [disabled]="savingId() === m.id"
+                                class="mb-px inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-prode-accent to-amber-300 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg disabled:opacity-50"
+                              >
+                                @if (savingId() === m.id) {
+                                  <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
+                                } @else {
+                                  {{ predictionByMatchId().get(m.id) ? 'Act.' : 'Guardar' }}
+                                }
+                              </button>
                             </div>
                           } @else {
                             <div class="flex shrink-0 flex-col items-end text-right">
@@ -167,22 +179,8 @@
                           }
                         </div>
 
-                        @if (!isMatchStarted(m)) {
-                          <div class="border-t border-prode-border/50 px-3 py-2">
-                            <button
-                              type="button"
-                              (click)="savePrediction(m)"
-                              [disabled]="savingId() === m.id"
-                              class="btn-primary w-full px-3 py-2 text-xs shadow-md"
-                            >
-                              @if (savingId() === m.id) {
-                                <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                              }
-                              {{ predictionByMatchId().get(m.id) ? 'Actualizar' : 'Guardar' }}
-                            </button>
-                          </div>
-                        } @else if (!isMatchFinished(m) && !isMatchInProgress(m)) {
-                          <div class="border-t border-prode-border/50 px-3 py-1.5">
+                        @if (!isMatchFinished(m) && !isMatchInProgress(m) && isMatchStarted(m)) {
+                          <div class="border-t border-prode-border/50 px-2.5 py-1">
                             <span
                               class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-200"
                             >

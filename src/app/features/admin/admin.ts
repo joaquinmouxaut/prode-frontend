@@ -4,6 +4,7 @@ import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
 import { MATCH_PHASE_LABELS } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
+import { formatArgentinaDateTime } from '../../core/utils/argentina-datetime';
 import { isMatchFinalized } from '../../core/utils/match-lifecycle';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -100,14 +101,7 @@ export class Admin {
   }
 
   formatWhen(iso: string): string {
-    try {
-      return new Intl.DateTimeFormat('es-AR', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(new Date(iso));
-    } catch {
-      return iso;
-    }
+    return formatArgentinaDateTime(iso);
   }
 
   clampGoals(raw: string | number): number {

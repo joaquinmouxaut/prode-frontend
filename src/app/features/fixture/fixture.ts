@@ -28,6 +28,7 @@ import {
 import {
   formatMatchScore,
   hasScoreableResult,
+  isMatchApiFinished,
   isMatchFinished,
   isMatchInProgress,
   isMatchStarted,
@@ -81,6 +82,7 @@ export class Fixture {
   protected readonly isMatchStarted = isMatchStarted;
   protected readonly isMatchInProgress = isMatchInProgress;
   protected readonly isMatchFinished = isMatchFinished;
+  protected readonly isMatchApiFinished = isMatchApiFinished;
   protected readonly hasScoreableResult = hasScoreableResult;
   protected readonly formatMatchScore = formatMatchScore;
 

@@ -113,11 +113,12 @@
                                   <span class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"></span>
                                   En curso
                                 </span>
-                              } @else if (isMatchFinished(m)) {
-                                <span class="text-emerald-300/90">· Final</span>
                               }
                               @if (hasScoreableResult(m)) {
                                 <span class="font-semibold text-prode-accent">· {{ formatMatchScore(m) }}</span>
+                              }
+                              @if (isMatchApiFinished(m)) {
+                                <span class="text-emerald-300/90">· Final</span>
                               }
                             </p>
                           </div>

@@ -9,14 +9,16 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { formatMatchPhaseMinimal } from '../../core/models/match-phase';
+import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import { AuthService } from '../../core/services/auth.service';
 import {
   ParticipantsService,
   type ParticipantProfile,
 } from '../../core/services/participants.service';
+import { PredictionsService } from '../../core/services/predictions.service';
 import {
   fixtureGroupDateKey,
   fixtureGroupTodayDateKey,
@@ -28,8 +30,14 @@ import {
   hasScoreableResult,
   isMatchApiFinished,
   isMatchInProgress,
+  isMatchStarted,
 } from '../../core/utils/match-lifecycle';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
+
+interface ParticipantMatchEntry {
+  match: Match;
+  prediction: Prediction | null;
+}
 
 @Component({
   selector: 'app-participant',
@@ -40,6 +48,7 @@ import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 export class Participant {
   private readonly route = inject(ActivatedRoute);
   private readonly participantsApi = inject(ParticipantsService);
+  private readonly predictionsApi = inject(PredictionsService);
   private readonly injector = inject(Injector);
   private readonly platformId = inject(PLATFORM_ID);
   protected readonly auth = inject(AuthService);
@@ -55,16 +64,27 @@ export class Participant {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly profile = signal<ParticipantProfile | null>(null);
+  protected readonly matches = signal<Match[]>([]);
   protected readonly expandedDayKeys = signal<Set<string>>(new Set());
-  protected readonly groupedPredictions = computed(() => this.buildPredictionGroups());
+  protected readonly groupedMatchEntries = computed(() =>
+    this.buildMatchEntryGroups(this.profile(), this.matches()),
+  );
 
   constructor() {
     this.route.paramMap
-      .pipe(switchMap((params) => this.participantsApi.getProfile(Number(params.get('id')))))
+      .pipe(
+        switchMap((params) =>
+          forkJoin({
+            profile: this.participantsApi.getProfile(Number(params.get('id'))),
+            matches: this.predictionsApi.getMatches(),
+          }),
+        ),
+      )
       .subscribe({
-        next: (profile) => {
+        next: ({ profile, matches }) => {
           this.profile.set(profile);
-          this.initDayExpansion(profile);
+          this.matches.set(matches);
+          this.initDayExpansion(profile, matches);
           this.loading.set(false);
           this.scheduleScrollToToday();
         },
@@ -83,7 +103,7 @@ export class Participant {
     return formatArgentinaMatchTime(iso);
   }
 
-  trackPredictionDay(_: number, group: { dateKey: string }): string {
+  trackMatchDay(_: number, group: { dateKey: string }): string {
     return group.dateKey;
   }
 
@@ -100,17 +120,17 @@ export class Participant {
     });
   }
 
-  matchCountForDay(group: { predictions: Prediction[] }): number {
-    return group.predictions.length;
+  matchCountForDay(group: { entries: ParticipantMatchEntry[] }): number {
+    return group.entries.length;
   }
 
   isTodayDay(dateKey: string): boolean {
     return dateKey === this.todayDateKey();
   }
 
-  private initDayExpansion(profile: ParticipantProfile): void {
+  private initDayExpansion(profile: ParticipantProfile, matches: Match[]): void {
     const today = fixtureGroupTodayDateKey();
-    const groups = this.buildPredictionGroups(profile);
+    const groups = this.buildMatchEntryGroups(profile, matches);
     const dayKeys = new Set(groups.map((group) => group.dateKey));
     this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set());
   }
@@ -136,7 +156,7 @@ export class Participant {
 
   /** Día de hoy si hay partidos; si no, el próximo con fixture o el último pasado. */
   private resolveScrollDayKey(): string | null {
-    const groups = this.groupedPredictions();
+    const groups = this.groupedMatchEntries();
     if (groups.length === 0) {
       return null;
     }
@@ -148,25 +168,42 @@ export class Participant {
     return upcoming?.dateKey ?? groups[groups.length - 1]?.dateKey ?? null;
   }
 
-  private buildPredictionGroups(source: ParticipantProfile | null = this.profile()): Array<{
+  private buildStartedMatchEntries(
+    profile: ParticipantProfile,
+    matches: Match[],
+  ): ParticipantMatchEntry[] {
+    const predictionByMatchId = new Map(profile.predictions.map((p) => [p.matchId, p]));
+
+    return matches
+      .filter((match) => isMatchStarted(match))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((match) => ({
+        match,
+        prediction: predictionByMatchId.get(match.id) ?? null,
+      }));
+  }
+
+  private buildMatchEntryGroups(
+    source: ParticipantProfile | null = this.profile(),
+    matches: Match[] = [],
+  ): Array<{
     dateKey: string;
     heading: string;
-    predictions: Prediction[];
+    entries: ParticipantMatchEntry[];
   }> {
     if (!source) return [];
-    const byDate = new Map<string, Prediction[]>();
-    for (const prediction of source.predictions) {
-      if (!prediction.match) continue;
-      const dateKey = fixtureGroupDateKey(prediction.match.date);
+
+    const byDate = new Map<string, ParticipantMatchEntry[]>();
+    for (const entry of this.buildStartedMatchEntries(source, matches)) {
+      const dateKey = fixtureGroupDateKey(entry.match.date);
       if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-      byDate.get(dateKey)!.push(prediction);
+      byDate.get(dateKey)!.push(entry);
     }
-    const groups = Array.from(byDate.entries()).map(([dateKey, predictions]) => ({
+
+    const groups = Array.from(byDate.entries()).map(([dateKey, entries]) => ({
       dateKey,
       heading: formatFixtureGroupDayHeading(dateKey),
-      predictions: predictions.sort(
-        (a, b) => new Date(a.match!.date).getTime() - new Date(b.match!.date).getTime(),
-      ),
+      entries,
     }));
     return groups.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
   }

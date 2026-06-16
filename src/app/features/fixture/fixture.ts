@@ -14,6 +14,7 @@ import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { BRANDING } from '../../core/constants/branding';
 import { AuthService } from '../../core/services/auth.service';
+import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { PredictionsService } from '../../core/services/predictions.service';
 import {
@@ -23,6 +24,7 @@ import {
 } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
+import type { User } from '../../core/models/user.model';
 import {
   fixtureGroupDateKey,
   fixtureGroupTodayDateKey,
@@ -50,6 +52,11 @@ interface FixtureDayGroup {
   sections: FixtureSection[];
 }
 
+interface GroupPredictionEntry {
+  user: Pick<User, 'id' | 'name'>;
+  prediction: Prediction | null;
+}
+
 @Component({
   selector: 'app-fixture',
   imports: [FormsModule, RouterLink, AppLucideIconsModule],
@@ -58,6 +65,7 @@ interface FixtureDayGroup {
 })
 export class Fixture {
   private readonly predictionsApi = inject(PredictionsService);
+  private readonly leaderboardApi = inject(LeaderboardService);
   private readonly injector = inject(Injector);
   private readonly platformId = inject(PLATFORM_ID);
   protected readonly auth = inject(AuthService);
@@ -74,6 +82,7 @@ export class Fixture {
   protected readonly matches = signal<Match[]>([]);
   protected readonly predictionByMatchId = signal<Map<number, Prediction>>(new Map());
   protected readonly visiblePredictions = signal<Prediction[]>([]);
+  protected readonly groupParticipants = signal<Pick<User, 'id' | 'name'>[]>([]);
   /** Borrador local: matchId -> goles */
   protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
   protected readonly savingId = signal<number | null>(null);
@@ -106,13 +115,17 @@ export class Fixture {
     forkJoin({
       matches: this.predictionsApi.getMatches(),
       predictions: this.predictionsApi.getPredictions(),
+      leaderboard: this.leaderboardApi.getLeaderboard(),
     }).subscribe({
-      next: ({ matches, predictions }) => {
+      next: ({ matches, predictions, leaderboard }) => {
         const sorted = [...matches].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
         this.matches.set(sorted);
         this.visiblePredictions.set(predictions);
+        this.groupParticipants.set(
+          leaderboard.rows.map((row) => ({ id: row.user.id, name: row.user.name })),
+        );
         const map = new Map<number, Prediction>();
         const draft: Record<number, { home: number; away: number }> = {};
         for (const p of predictions.filter((item) => item.userId === user.id)) {
@@ -248,16 +261,26 @@ export class Fixture {
     });
   }
 
-  otherPredictionsForMatch(match: Match): Prediction[] {
+  groupPredictionEntriesForMatch(match: Match): GroupPredictionEntry[] {
     const user = this.auth.currentUser();
     if (!user || !isMatchStarted(match)) {
       return [];
     }
 
-    return this.visiblePredictions().filter(
-      (prediction) =>
-        prediction.matchId === match.id && prediction.userId !== user.id && prediction.user,
+    const predictionsForMatch = this.visiblePredictions().filter(
+      (prediction) => prediction.matchId === match.id,
     );
+    const predictionByUserId = new Map(
+      predictionsForMatch.map((prediction) => [prediction.userId, prediction]),
+    );
+
+    return this.groupParticipants()
+      .filter((participant) => participant.id !== user.id)
+      .map((participant) => ({
+        user: participant,
+        prediction: predictionByUserId.get(participant.id) ?? null,
+      }))
+      .sort((a, b) => a.user.name.localeCompare(b.user.name, 'es'));
   }
 
   isPredictionsExpanded(matchId: number): boolean {

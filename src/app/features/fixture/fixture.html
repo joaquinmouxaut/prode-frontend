@@ -99,12 +99,6 @@
                               <span class="truncate text-sm font-semibold text-white">{{ m.homeTeam }}</span>
                               <span class="text-xs text-prode-muted">vs</span>
                               <span class="truncate text-sm font-semibold text-white">{{ m.awayTeam }}</span>
-                            </div>
-                            <p class="text-[10px] leading-tight text-prode-muted">
-                              {{ formatMatchPhaseMinimal(m.phase) }}
-                            </p>
-                            <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
-                              <span>{{ formatWhen(m.date) }} hs (ARG)</span>
                               @if (isMatchInProgress(m)) {
                                 <span
                                   class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
@@ -113,11 +107,17 @@
                                   En curso
                                 </span>
                               }
+                              @if (isMatchApiFinished(m)) {
+                                <span class="text-xs text-emerald-300/90">Final</span>
+                              }
+                            </div>
+                            <p class="text-[10px] leading-tight text-prode-muted">
+                              {{ formatMatchPhaseMinimal(m.phase) }}
+                            </p>
+                            <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
+                              <span>{{ formatWhen(m.date) }} hs (ARG)</span>
                               @if (hasScoreableResult(m)) {
                                 <span class="font-semibold text-prode-accent">· {{ formatMatchScore(m) }}</span>
-                              }
-                              @if (isMatchApiFinished(m)) {
-                                <span class="text-emerald-300/90">· Final</span>
                               }
                             </p>
                           </div>
@@ -176,7 +176,7 @@
                           }
                         </div>
 
-                        @if (otherPredictionsForMatch(m); as groupPredictions) {
+                        @if (groupPredictionEntriesForMatch(m); as groupPredictions) {
                           @if (groupPredictions.length > 0) {
                             <div class="border-t border-prode-border/60 bg-prode-bg/40">
                               <button
@@ -198,24 +198,24 @@
                               </button>
                               @if (isPredictionsExpanded(m.id)) {
                                 <ul class="space-y-1 px-3 pb-2.5">
-                                  @for (p of groupPredictions; track p.id) {
+                                  @for (entry of groupPredictions; track entry.user.id) {
                                     <li class="flex items-center justify-between gap-3 text-xs text-prode-muted">
-                                      @if (p.user; as user) {
-                                        <a
-                                          [routerLink]="['/participantes', user.id]"
-                                          class="text-link truncate text-white hover:text-prode-accent"
-                                        >
-                                          {{ user.name }}
-                                        </a>
+                                      <a
+                                        [routerLink]="['/participantes', entry.user.id]"
+                                        class="text-link truncate text-white hover:text-prode-accent"
+                                      >
+                                        {{ entry.user.name }}
+                                      </a>
+                                      @if (entry.prediction; as p) {
+                                        <span class="shrink-0 font-bold text-stone-200">
+                                          {{ p.homeGoals }} — {{ p.awayGoals }}
+                                          @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {
+                                            <span class="ml-2 text-prode-accent">+{{ p.points }} pts</span>
+                                          }
+                                        </span>
                                       } @else {
-                                        <span class="truncate font-medium text-white">{{ p.user?.name }}</span>
+                                        <span class="shrink-0 text-[11px] italic text-prode-muted">Sin predicción</span>
                                       }
-                                      <span class="shrink-0 font-bold text-stone-200">
-                                        {{ p.homeGoals }} — {{ p.awayGoals }}
-                                        @if (hasScoreableResult(m) && p.points !== null && p.points !== undefined) {
-                                          <span class="ml-2 text-prode-accent">+{{ p.points }} pts</span>
-                                        }
-                                      </span>
                                     </li>
                                   }
                                 </ul>

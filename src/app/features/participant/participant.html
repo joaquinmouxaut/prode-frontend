@@ -87,13 +87,13 @@
           </p>
         </div>
 
-        @if (groupedPredictions().length === 0) {
+        @if (groupedMatchEntries().length === 0) {
           <div class="card-sport p-6 text-center text-prode-muted">
-            Todavía no hay predicciones visibles para este participante.
+            Todavía no hay partidos iniciados visibles para este participante.
           </div>
         } @else {
           <div class="space-y-3">
-            @for (group of groupedPredictions(); track trackPredictionDay($index, group)) {
+            @for (group of groupedMatchEntries(); track trackMatchDay($index, group)) {
               <div class="fixture-day-group card-sport overflow-hidden" [id]="'participant-day-' + group.dateKey">
                 <button
                   type="button"
@@ -123,53 +123,59 @@
 
                 @if (isDayExpanded(group.dateKey)) {
                   <ul class="space-y-2 border-t border-prode-border/60 px-2 pb-2 pt-2">
-                    @for (prediction of group.predictions; track prediction.id) {
-                      @if (prediction.match; as match) {
-                        <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
-                          <div class="flex items-start gap-2 p-2.5">
-                            <div class="min-w-0 flex-1 space-y-0.5">
-                              <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                                <p class="text-sm font-semibold text-white">
-                                  {{ match.homeTeam }}
-                                  <span class="text-xs text-prode-muted">vs</span>
-                                  {{ match.awayTeam }}
-                                </p>
-                              </div>
-                              <p class="text-[10px] leading-tight text-prode-muted">
-                                {{ formatMatchPhaseMinimal(match.phase) }}
+                    @for (entry of group.entries; track entry.match.id) {
+                      <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
+                        <div class="flex items-start gap-2 p-2.5">
+                          <div class="min-w-0 flex-1 space-y-0.5">
+                            <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                              <p class="text-sm font-semibold text-white">
+                                {{ entry.match.homeTeam }}
+                                <span class="text-xs text-prode-muted">vs</span>
+                                {{ entry.match.awayTeam }}
                               </p>
-                              <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
-                                <span>{{ formatWhen(match.date) }} hs (ARG)</span>
-                                @if (isMatchInProgress(match)) {
-                                  <span
-                                    class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
-                                  >
-                                    <span class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"></span>
-                                    En curso
-                                  </span>
-                                }
-                                @if (hasScoreableResult(match)) {
-                                  <span class="font-semibold text-prode-accent">· {{ formatMatchScore(match) }}</span>
-                                }
-                                @if (isMatchApiFinished(match)) {
-                                  <span class="text-emerald-300/90">· Final</span>
-                                }
-                              </p>
+                              @if (isMatchInProgress(entry.match)) {
+                                <span
+                                  class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
+                                >
+                                  <span class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"></span>
+                                  En curso
+                                </span>
+                              }
+                              @if (isMatchApiFinished(entry.match)) {
+                                <span class="text-xs text-emerald-300/90">Final</span>
+                              }
                             </div>
-                            <div class="flex shrink-0 flex-col items-end text-right">
-                              <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
-                                Predicción
-                              </p>
+                            <p class="text-[10px] leading-tight text-prode-muted">
+                              {{ formatMatchPhaseMinimal(entry.match.phase) }}
+                            </p>
+                            <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
+                              <span>{{ formatWhen(entry.match.date) }} hs (ARG)</span>
+                              @if (hasScoreableResult(entry.match)) {
+                                <span class="font-semibold text-prode-accent">· {{ formatMatchScore(entry.match) }}</span>
+                              }
+                            </p>
+                          </div>
+                          <div class="flex shrink-0 flex-col items-end text-right">
+                            <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
+                              Predicción
+                            </p>
+                            @if (entry.prediction; as prediction) {
                               <p class="font-display text-lg font-bold leading-tight text-white">
                                 {{ prediction.homeGoals }} — {{ prediction.awayGoals }}
                               </p>
-                              @if (hasScoreableResult(match) && prediction.points !== null && prediction.points !== undefined) {
+                              @if (
+                                hasScoreableResult(entry.match) &&
+                                prediction.points !== null &&
+                                prediction.points !== undefined
+                              ) {
                                 <p class="text-xs font-bold text-prode-gold">+{{ prediction.points }} pts</p>
                               }
-                            </div>
+                            } @else {
+                              <p class="text-sm italic text-prode-muted">Sin predicción</p>
+                            }
                           </div>
-                        </li>
-                      }
+                        </div>
+                      </li>
                     }
                   </ul>
                 }

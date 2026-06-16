@@ -18,7 +18,7 @@ import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { PredictionsService } from '../../core/services/predictions.service';
 import {
-  formatMatchPhaseMinimal,
+  formatMatchPhaseLabel,
   MATCH_PHASE_LABELS,
   type MatchPhase,
 } from '../../core/models/match-phase';
@@ -75,7 +75,7 @@ export class Fixture {
   private scrolledToToday = false;
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
-  protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
+  protected readonly formatMatchPhaseLabel = formatMatchPhaseLabel;
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);

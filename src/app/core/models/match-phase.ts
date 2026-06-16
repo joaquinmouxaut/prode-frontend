@@ -29,11 +29,39 @@ export const MATCH_PHASE_LABELS: Record<MatchPhase, string> = {
   FINAL: 'Final',
 };
 
-/** Etiqueta corta para tarjetas de partido (fase + jornada en grupos). */
-export function formatMatchPhaseMinimal(phase: MatchPhase): string {
+/** Letra de grupo (A–L) desde GROUP_F o "F". */
+export function formatGroupLetter(groupCode: string | null | undefined): string | null {
+  if (!groupCode) {
+    return null;
+  }
+  const upper = groupCode.trim().toUpperCase();
+  const fromEnum = upper.match(/^GROUP_([A-Z])$/);
+  if (fromEnum) {
+    return fromEnum[1];
+  }
+  if (/^[A-Z]$/.test(upper)) {
+    return upper;
+  }
+  return null;
+}
+
+/** Etiqueta compacta para tarjetas de partido. */
+export function formatMatchPhaseLabel(
+  phase: MatchPhase,
+  groupCode?: string | null,
+): string {
   if (GROUP_PHASES.has(phase)) {
     const jornada = phase.slice(-1);
-    return `Grupos · Jornada ${jornada}`;
+    const letter = formatGroupLetter(groupCode);
+    if (letter) {
+      return `Grupo ${letter}, Jornada ${jornada}`;
+    }
+    return `Jornada ${jornada}`;
   }
   return MATCH_PHASE_LABELS[phase];
+}
+
+/** @deprecated Usar formatMatchPhaseLabel */
+export function formatMatchPhaseMinimal(phase: MatchPhase): string {
+  return formatMatchPhaseLabel(phase);
 }

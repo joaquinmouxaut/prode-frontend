@@ -1,6 +1,6 @@
 <section class="space-y-5">
   <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-    <div>
+    <div class="min-w-0">
       <p class="eyebrow text-prode-gold">Ranking</p>
       <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">Tabla de posiciones</h2>
       <p class="mt-0.5 max-w-xl text-sm text-prode-muted">
@@ -11,7 +11,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
+      class="relative z-10 shrink-0 touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar

@@ -2,8 +2,8 @@
   <header
     class="sticky top-0 z-30 border-b border-prode-border/80 bg-prode-bg/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] backdrop-blur-md md:px-8"
   >
-    <div class="mx-auto flex max-w-5xl items-center gap-2">
-      <a routerLink="/fixtures" class="group flex min-h-11 shrink-0 items-center gap-2.5">
+    <div class="mx-auto flex max-w-5xl min-w-0 items-center gap-2">
+      <a routerLink="/fixtures" class="group flex min-h-11 min-w-0 max-w-[45%] shrink items-center gap-2.5 sm:max-w-none sm:shrink-0">
         <app-brand-mark size="sm" />
         <div class="min-w-0 leading-tight">
           <p class="truncate font-display text-lg tracking-wide text-stone-100 sm:text-xl">{{ branding.appName }}</p>
@@ -12,7 +12,7 @@
           </p>
         </div>
       </a>
-      <nav class="relative z-20 ml-auto hidden items-center gap-2 sm:flex" aria-label="Navegación principal">
+      <nav class="relative z-30 ml-auto hidden shrink-0 items-center gap-2 sm:flex" aria-label="Navegación principal">
         <a
           routerLink="/fixtures"
           routerLinkActive="bg-prode-elevated text-white ring-1 ring-prode-accent/40"
@@ -55,7 +55,7 @@
       <button
         type="button"
         (click)="logout()"
-        class="relative z-20 ml-auto touch-target inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-prode-border bg-prode-elevated px-3 py-2 text-xs font-semibold text-prode-muted transition hover:border-rose-500/40 hover:text-rose-300 sm:ml-0"
+        class="relative z-30 ml-auto touch-target inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-prode-border bg-prode-elevated px-3 py-2 text-xs font-semibold text-prode-muted transition hover:border-rose-500/40 hover:text-rose-300 sm:ml-0"
       >
         <lucide-icon name="log-out" [size]="18" aria-hidden="true" />
         <span class="hidden sm:inline">Salir</span>
@@ -68,7 +68,7 @@
   </main>
 
   <nav
-    class="fixed bottom-0 left-0 right-0 z-40 border-t border-prode-border bg-prode-surface/98 backdrop-blur-lg md:hidden"
+    class="hidden max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:block border-t border-prode-border bg-prode-surface/98 backdrop-blur-lg"
     aria-label="Principal"
   >
     <div

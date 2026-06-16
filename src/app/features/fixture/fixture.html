@@ -1,6 +1,6 @@
 <section class="space-y-5">
   <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-    <div>
+    <div class="min-w-0">
       <p class="eyebrow text-prode-blue">Fixture</p>
       <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">Partidos</h2>
       <p class="mt-0.5 max-w-xl text-sm text-prode-muted">
@@ -10,7 +10,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
+      class="relative z-10 shrink-0 touch-target inline-flex items-center justify-center gap-2 self-stretch rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white sm:self-start"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar
@@ -94,8 +94,8 @@
                   @for (m of sec.matches; track trackMatch($index, m)) {
                       <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
                         <div class="flex items-start gap-2 p-2.5">
-                          <div class="min-w-0 flex-1 space-y-0.5">
-                            <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                          <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
+                            <div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
                               <span class="truncate text-sm font-semibold text-white">{{ m.homeTeam }}</span>
                               <span class="text-xs text-prode-muted">vs</span>
                               <span class="truncate text-sm font-semibold text-white">{{ m.awayTeam }}</span>
@@ -112,7 +112,7 @@
                               }
                             </div>
                             <p class="text-[10px] leading-tight text-prode-muted">
-                              {{ formatMatchPhaseMinimal(m.phase) }}
+                              {{ formatMatchPhaseLabel(m.phase, m.groupCode) }}
                             </p>
                             <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
                               <span>{{ formatWhen(m.date) }} hs (ARG)</span>
@@ -123,7 +123,7 @@
                           </div>
 
                           @if (!isMatchStarted(m)) {
-                            <div class="flex shrink-0 items-end gap-1">
+                            <div class="relative z-10 flex shrink-0 items-end gap-1">
                               <label class="w-10">
                                 <span class="mb-0.5 block text-center text-[9px] font-bold uppercase text-prode-muted"
                                   >L</span
@@ -153,7 +153,7 @@
                                 type="button"
                                 (click)="savePrediction(m)"
                                 [disabled]="savingId() === m.id"
-                                class="mb-px inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-prode-accent to-amber-300 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg disabled:opacity-50"
+                                class="mb-px inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-prode-accent to-amber-300 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 @if (savingId() === m.id) {
                                   <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
@@ -163,7 +163,7 @@
                               </button>
                             </div>
                           } @else {
-                            <div class="flex shrink-0 flex-col items-end text-right">
+                            <div class="relative z-10 flex shrink-0 flex-col items-end text-right">
                               <p class="font-display text-lg font-bold leading-tight text-white">
                                 {{ draft()[m.id]?.home ?? 0 }} — {{ draft()[m.id]?.away ?? 0 }}
                               </p>

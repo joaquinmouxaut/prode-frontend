@@ -8,6 +8,7 @@ export interface Match {
   awayTeam: string;
   date: string;
   phase: MatchPhase;
+  groupCode?: string | null;
   homeGoals?: number | null;
   awayGoals?: number | null;
   externalStatus?: string | null;

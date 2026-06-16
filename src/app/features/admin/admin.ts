@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
-import { formatMatchPhaseMinimal, MATCH_PHASE_LABELS } from '../../core/models/match-phase';
+import { formatMatchPhaseLabel, MATCH_PHASE_LABELS } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import {
   fixtureGroupDateKey,
@@ -37,7 +37,7 @@ export class Admin {
   private readonly toast = inject(ToastService);
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
-  protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
+  protected readonly formatMatchPhaseLabel = formatMatchPhaseLabel;
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);

@@ -126,8 +126,8 @@
                     @for (entry of group.entries; track entry.match.id) {
                       <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
                         <div class="flex items-start gap-2 p-2.5">
-                          <div class="min-w-0 flex-1 space-y-0.5">
-                            <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                          <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
+                            <div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
                               <p class="text-sm font-semibold text-white">
                                 {{ entry.match.homeTeam }}
                                 <span class="text-xs text-prode-muted">vs</span>
@@ -146,7 +146,7 @@
                               }
                             </div>
                             <p class="text-[10px] leading-tight text-prode-muted">
-                              {{ formatMatchPhaseMinimal(entry.match.phase) }}
+                              {{ formatMatchPhaseLabel(entry.match.phase, entry.match.groupCode) }}
                             </p>
                             <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
                               <span>{{ formatWhen(entry.match.date) }} hs (ARG)</span>
@@ -155,7 +155,7 @@
                               }
                             </p>
                           </div>
-                          <div class="flex shrink-0 flex-col items-end text-right">
+                          <div class="relative z-10 flex shrink-0 flex-col items-end text-right">
                             <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
                               Predicción
                             </p>

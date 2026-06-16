@@ -90,6 +90,14 @@
     @apply cursor-pointer font-semibold text-prode-accent transition hover:underline;
   }
 
+  .row-actions {
+    @apply relative z-10 shrink-0;
+  }
+
+  .row-main {
+    @apply min-w-0 flex-1 overflow-hidden;
+  }
+
   .input-field {
     @apply w-full rounded-lg border border-prode-border bg-prode-bg px-3 py-3.5 text-base text-white outline-none ring-prode-accent/40 placeholder:text-stone-600 focus:ring-2 sm:text-sm sm:py-3;
   }

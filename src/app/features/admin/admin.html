@@ -10,7 +10,7 @@
           Polling cada 15 minutos durante partidos en curso. Fuera de ventana activa no se consulta.
         </p>
       </div>
-      <div class="flex flex-wrap gap-1.5">
+      <div class="relative z-10 flex shrink-0 flex-wrap gap-1.5">
         <button
           type="button"
           (click)="importFixture()"
@@ -70,7 +70,7 @@
   </div>
 
   <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-    <div>
+    <div class="min-w-0">
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
       <h2 class="font-display text-2xl tracking-wide text-white sm:text-3xl">Resultados</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
@@ -84,7 +84,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
+      class="relative z-10 shrink-0 inline-flex items-center justify-center gap-2 self-start rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar
@@ -140,14 +140,14 @@
               @for (m of group.matches; track trackMatch($index, m)) {
                 <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
                   <div class="flex items-start gap-2 p-2.5">
-                    <div class="min-w-0 flex-1 space-y-0.5">
-                      <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-white">
+                    <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
+                      <div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-white">
                         <span class="truncate">{{ m.homeTeam }}</span>
                         <span class="text-xs text-prode-muted">vs</span>
                         <span class="truncate">{{ m.awayTeam }}</span>
                       </div>
                       <p class="text-[10px] leading-tight text-prode-muted">
-                        {{ formatMatchPhaseMinimal(m.phase) }}
+                        {{ formatMatchPhaseLabel(m.phase, m.groupCode) }}
                       </p>
                       <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
                         <span>{{ formatWhen(m.date) }} hs (ARG)</span>
@@ -170,7 +170,7 @@
                       </p>
                     </div>
 
-                    <div class="flex shrink-0 items-end gap-1">
+                    <div class="relative z-10 flex shrink-0 items-end gap-1">
                       <label class="w-10">
                         <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">L</span>
                         <input
@@ -200,7 +200,7 @@
                             type="button"
                             (click)="saveResult(m)"
                             [disabled]="savingId() === m.id"
-                            class="mb-px inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-400 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
+                            class="mb-px inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-400 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             @if (savingId() === m.id) {
                               <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
@@ -216,7 +216,7 @@
                               type="button"
                               (click)="finalizeMatch(m)"
                               [disabled]="finalizingId() === m.id"
-                              class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
+                              class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               @if (finalizingId() === m.id) {
                                 <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
@@ -229,7 +229,7 @@
                             type="button"
                             (click)="unfinalizeMatch(m)"
                             [disabled]="unfinalizingId() === m.id"
-                            class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-amber-400/40 bg-amber-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:opacity-50"
+                            class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-400/40 bg-amber-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             @if (unfinalizingId() === m.id) {
                               <lucide-icon name="loader-2" class="animate-spin" [size]="12" />

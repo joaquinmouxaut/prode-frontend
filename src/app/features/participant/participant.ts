@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, switchMap } from 'rxjs';
-import { formatMatchPhaseMinimal } from '../../core/models/match-phase';
+import { formatMatchPhaseLabel } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -55,7 +55,7 @@ export class Participant {
 
   protected readonly todayDateKey = computed(() => fixtureGroupTodayDateKey());
 
-  protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
+  protected readonly formatMatchPhaseLabel = formatMatchPhaseLabel;
   protected readonly formatMatchScore = formatMatchScore;
   protected readonly hasScoreableResult = hasScoreableResult;
   protected readonly isMatchInProgress = isMatchInProgress;

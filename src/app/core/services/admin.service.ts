@@ -26,6 +26,7 @@ export interface FixtureImportResponse {
   importedMatches: number;
   createdMatches: number;
   updatedMatches: number;
+  backfilledGroupCodes: number;
   skippedUnknownPhase: number;
   skippedManualOverride: number;
   discoveredTeams: number;

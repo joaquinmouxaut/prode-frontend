@@ -28,3 +28,12 @@ export const MATCH_PHASE_LABELS: Record<MatchPhase, string> = {
   THIRD_PLACE: 'Tercer puesto',
   FINAL: 'Final',
 };
+
+/** Etiqueta corta para tarjetas de partido (fase + jornada en grupos). */
+export function formatMatchPhaseMinimal(phase: MatchPhase): string {
+  if (GROUP_PHASES.has(phase)) {
+    const jornada = phase.slice(-1);
+    return `Grupos · J${jornada}`;
+  }
+  return MATCH_PHASE_LABELS[phase];
+}

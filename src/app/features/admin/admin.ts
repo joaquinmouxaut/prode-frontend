@@ -2,9 +2,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
-import { MATCH_PHASE_LABELS } from '../../core/models/match-phase';
+import { formatMatchPhaseMinimal, MATCH_PHASE_LABELS } from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
-import { formatArgentinaDateTime } from '../../core/utils/argentina-datetime';
+import {
+  fixtureGroupDateKey,
+  fixtureGroupTodayDateKey,
+  formatArgentinaMatchTime,
+  formatFixtureGroupDayHeading,
+} from '../../core/utils/argentina-datetime';
 import { isMatchFinalized } from '../../core/utils/match-lifecycle';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -32,6 +37,7 @@ export class Admin {
   private readonly toast = inject(ToastService);
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
+  protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
@@ -51,6 +57,8 @@ export class Admin {
   protected readonly resultMatches = computed(() =>
     [...this.matches()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   );
+  protected readonly groupedResultMatches = computed(() => this.buildResultGroups(this.resultMatches()));
+  protected readonly expandedDayKeys = signal<Set<string>>(new Set());
 
   protected readonly pendingCount = computed(() => this.matches().filter(isMatchPending).length);
 
@@ -69,6 +77,7 @@ export class Admin {
     this.matchesApi.getMatches().subscribe({
       next: (matches) => {
         this.matches.set(matches);
+        this.initDayExpansion(matches);
         const draft: Record<number, { home: number; away: number }> = {};
         for (const m of matches) {
           draft[m.id] = draftGoalsForMatch(m);
@@ -100,8 +109,33 @@ export class Admin {
     return m.id;
   }
 
+  trackDay(_: number, group: { dateKey: string }): string {
+    return group.dateKey;
+  }
+
   formatWhen(iso: string): string {
-    return formatArgentinaDateTime(iso);
+    return formatArgentinaMatchTime(iso);
+  }
+
+  matchCountForDay(group: { matches: Match[] }): number {
+    return group.matches.length;
+  }
+
+  isDayExpanded(dateKey: string): boolean {
+    return this.expandedDayKeys().has(dateKey);
+  }
+
+  isTodayDay(dateKey: string): boolean {
+    return dateKey === fixtureGroupTodayDateKey();
+  }
+
+  toggleDay(dateKey: string): void {
+    this.expandedDayKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      return next;
+    });
   }
 
   clampGoals(raw: string | number): number {
@@ -279,5 +313,27 @@ export class Admin {
           this.savingTournamentResults.set(false);
         },
       });
+  }
+
+  private initDayExpansion(matches: Match[]): void {
+    const groups = this.buildResultGroups(matches);
+    const today = fixtureGroupTodayDateKey();
+    const dayKeys = new Set(groups.map((group) => group.dateKey));
+    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set(dayKeys.size ? [groups[0].dateKey] : []));
+  }
+
+  private buildResultGroups(matches: Match[]): Array<{ dateKey: string; heading: string; matches: Match[] }> {
+    const byDate = new Map<string, Match[]>();
+    for (const match of matches) {
+      const dateKey = fixtureGroupDateKey(match.date);
+      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+      byDate.get(dateKey)!.push(match);
+    }
+    const groups = Array.from(byDate.entries()).map(([dateKey, groupMatches]) => ({
+      dateKey,
+      heading: formatFixtureGroupDayHeading(dateKey),
+      matches: groupMatches.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    }));
+    return groups.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
   }
 }

@@ -1,21 +1,21 @@
-<section class="space-y-6">
-  <div class="card-sport space-y-4 p-4 sm:p-5">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+<section class="space-y-5">
+  <div class="card-sport space-y-3 p-4">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p class="eyebrow text-prode-accent">
           Fixture automation
         </p>
-        <h3 class="font-display text-xl tracking-wide text-white">Import y sincronización</h3>
+        <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">Import y sincronización</h3>
         <p class="mt-1 text-xs text-prode-muted">
           Polling cada 15 minutos durante partidos en curso. Fuera de ventana activa no se consulta.
         </p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-1.5">
         <button
           type="button"
           (click)="importFixture()"
           [disabled]="importingFixture()"
-          class="touch-target inline-flex items-center justify-center gap-2 rounded-full border border-prode-accent/40 bg-prode-accent/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-amber-100 hover:bg-prode-accent/25 disabled:opacity-50"
+          class="touch-target inline-flex items-center justify-center gap-2 rounded-lg border border-prode-accent/40 bg-prode-accent/15 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-amber-100 hover:bg-prode-accent/25 disabled:opacity-50"
         >
           @if (importingFixture()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
@@ -26,7 +26,7 @@
           type="button"
           (click)="runSyncNow()"
           [disabled]="syncingNow()"
-          class="touch-target inline-flex items-center justify-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-stone-200 hover:bg-prode-border/40 disabled:opacity-50"
+          class="touch-target inline-flex items-center justify-center gap-2 rounded-lg border border-prode-border bg-prode-elevated px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-stone-200 hover:bg-prode-border/40 disabled:opacity-50"
         >
           @if (syncingNow()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
@@ -37,7 +37,7 @@
           type="button"
           (click)="refreshSyncStatus()"
           [disabled]="loadingSyncStatus()"
-          class="inline-flex items-center justify-center gap-2 rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white disabled:opacity-50"
+          class="inline-flex items-center justify-center gap-2 rounded-lg border border-prode-border bg-prode-elevated px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-prode-muted hover:text-white disabled:opacity-50"
         >
           @if (loadingSyncStatus()) {
             <lucide-icon name="loader-2" class="animate-spin" [size]="15" />
@@ -49,19 +49,19 @@
 
     @if (syncStatus(); as status) {
       <div class="grid gap-2 text-xs text-prode-muted sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+        <div class="rounded-lg border border-prode-border bg-prode-bg px-3 py-2">
           <p class="font-semibold text-white">Polling</p>
           <p>{{ status.enabled ? 'Activo' : 'Inactivo' }} · {{ status.frequencyMinutes }} min</p>
         </div>
-        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+        <div class="rounded-lg border border-prode-border bg-prode-bg px-3 py-2">
           <p class="font-semibold text-white">Uso de cuota</p>
           <p>{{ status.requestsUsedToday }} / {{ status.maxRequestsPerDay }}</p>
         </div>
-        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+        <div class="rounded-lg border border-prode-border bg-prode-bg px-3 py-2">
           <p class="font-semibold text-white">Partidos activos</p>
           <p>{{ status.activeMatches }}</p>
         </div>
-        <div class="rounded-xl border border-prode-border bg-prode-bg px-3 py-2">
+        <div class="rounded-lg border border-prode-border bg-prode-bg px-3 py-2">
           <p class="font-semibold text-white">Último resultado</p>
           <p class="truncate">{{ status.lastPollResult || 'Sin ejecuciones' }}</p>
         </div>
@@ -69,10 +69,10 @@
     }
   </div>
 
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
-      <h2 class="font-display text-3xl tracking-wide text-white">Resultados</h2>
+      <h2 class="font-display text-2xl tracking-wide text-white sm:text-3xl">Resultados</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
         Cargá o corregí el marcador oficial. Manual y sync API conviven hasta que finalices el partido.
         El backend recalcula puntos y ranking en cada guardado.
@@ -84,7 +84,7 @@
     <button
       type="button"
       (click)="refresh()"
-      class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
+      class="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-prode-border bg-prode-elevated px-4 py-2 text-xs font-semibold uppercase tracking-wide text-prode-muted hover:text-white"
     >
       <lucide-icon name="loader-2" [size]="16" [class.animate-spin]="loading()" />
       Actualizar
@@ -100,141 +100,169 @@
     <div class="card-sport border-rose-500/20 p-6 text-center text-rose-200">
       {{ loadError() }}
     </div>
-  } @else if (resultMatches().length === 0) {
+  } @else if (groupedResultMatches().length === 0) {
     <div class="card-sport p-8 text-center text-prode-muted">
       <lucide-icon name="calendar" class="mx-auto mb-3 text-prode-accent" [size]="32" />
       No hay partidos cargados. Importá el fixture o actualizá la lista.
     </div>
   } @else {
-    <ul class="space-y-3">
-      @for (m of resultMatches(); track trackMatch($index, m)) {
-        <li class="card-sport overflow-hidden">
-          <div
-            class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+    <div class="space-y-3">
+      @for (group of groupedResultMatches(); track trackDay($index, group)) {
+        <div class="fixture-day-group card-sport overflow-hidden" [id]="'admin-day-' + group.dateKey">
+          <button
+            type="button"
+            (click)="toggleDay(group.dateKey)"
+            class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-prode-bg/40"
+            [attr.aria-expanded]="isDayExpanded(group.dateKey)"
           >
-            <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
-                <span class="truncate">{{ m.homeTeam }}</span>
-                <span class="text-prode-muted">vs</span>
-                <span class="truncate">{{ m.awayTeam }}</span>
-              </div>
-              <p class="text-xs text-prode-muted">
-                {{ formatWhen(m.date) }} · {{ MATCH_PHASE_LABELS[m.phase] }}
-              </p>
-              <div class="flex flex-wrap gap-2 pt-1">
-                @if (isMatchFinalized(m)) {
-                  <span
-                    class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"
-                    >Finalizado</span
-                  >
-                } @else if (isMatchPending(m)) {
-                  <span
-                    class="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
-                    >Pendiente</span
-                  >
-                } @else {
-                  <span
-                    class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
-                    >Con resultado</span
-                  >
+            <lucide-icon name="calendar" class="shrink-0 text-prode-blue" [size]="16" />
+            <span class="min-w-0 flex-1">
+              <span class="font-display text-base capitalize tracking-wide text-white sm:text-lg">
+                {{ group.heading }}
+              </span>
+              <span class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted">
+                {{ matchCountForDay(group) }} partidos
+                @if (isTodayDay(group.dateKey)) {
+                  <span class="text-prode-accent">· Hoy</span>
                 }
-              </div>
-            </div>
+              </span>
+            </span>
+            <lucide-icon
+              name="chevron-down"
+              class="shrink-0 text-prode-muted transition-transform duration-200"
+              [class.rotate-180]="isDayExpanded(group.dateKey)"
+              [size]="18"
+            />
+          </button>
 
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
-                <label class="block sm:w-24">
-                  <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
-                    >Local</span
-                  >
-                  <input
-                    type="number"
-                    min="0"
-                    [disabled]="isMatchFinalized(m)"
-                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    [ngModel]="draft()[m.id]?.home ?? 0"
-                    (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
-                  />
-                </label>
-                <label class="block sm:w-24">
-                  <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
-                    >Visitante</span
-                  >
-                  <input
-                    type="number"
-                    min="0"
-                    [disabled]="isMatchFinalized(m)"
-                    class="w-full rounded-xl border border-prode-border bg-prode-bg px-2 py-2 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    [ngModel]="draft()[m.id]?.away ?? 0"
-                    (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
-                  />
-                </label>
-              </div>
-              <div class="flex flex-col gap-2 sm:flex-row">
-                @if (!isMatchFinalized(m)) {
-                  <button
-                    type="button"
-                    (click)="saveResult(m)"
-                    [disabled]="savingId() === m.id"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
-                  >
-                    @if (savingId() === m.id) {
-                      <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                    }
-                    @if (isMatchPending(m)) {
-                      Cargar resultado
-                    } @else {
-                      Actualizar resultado
-                    }
-                  </button>
-                  @if (!isMatchPending(m)) {
-                    <button
-                      type="button"
-                      (click)="finalizeMatch(m)"
-                      [disabled]="finalizingId() === m.id"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
-                    >
-                      @if (finalizingId() === m.id) {
-                        <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                      }
-                      Finalizar partido
-                    </button>
-                  }
-                } @else {
-                  <button
-                    type="button"
-                    (click)="unfinalizeMatch(m)"
-                    [disabled]="unfinalizingId() === m.id"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:opacity-50"
-                  >
-                    @if (unfinalizingId() === m.id) {
-                      <lucide-icon name="loader-2" class="animate-spin" [size]="16" />
-                    }
-                    Quitar finalización
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-        </li>
+          @if (isDayExpanded(group.dateKey)) {
+            <ul class="space-y-2 border-t border-prode-border/60 px-2 pb-2 pt-2">
+              @for (m of group.matches; track trackMatch($index, m)) {
+                <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
+                  <div class="flex items-start gap-2 p-2.5">
+                    <div class="min-w-0 flex-1 space-y-0.5">
+                      <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-white">
+                        <span class="truncate">{{ m.homeTeam }}</span>
+                        <span class="text-xs text-prode-muted">vs</span>
+                        <span class="truncate">{{ m.awayTeam }}</span>
+                      </div>
+                      <p class="text-[10px] leading-tight text-prode-muted">
+                        {{ formatMatchPhaseMinimal(m.phase) }}
+                      </p>
+                      <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
+                        <span>{{ formatWhen(m.date) }} hs (ARG)</span>
+                        @if (isMatchFinalized(m)) {
+                          <span
+                            class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
+                            >Finalizado</span
+                          >
+                        } @else if (isMatchPending(m)) {
+                          <span
+                            class="rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
+                            >Pendiente</span
+                          >
+                        } @else {
+                          <span
+                            class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
+                            >Con resultado</span
+                          >
+                        }
+                      </p>
+                    </div>
+
+                    <div class="flex shrink-0 items-end gap-1">
+                      <label class="w-10">
+                        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">L</span>
+                        <input
+                          type="number"
+                          min="0"
+                          [disabled]="isMatchFinalized(m)"
+                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          [ngModel]="draft()[m.id]?.home ?? 0"
+                          (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
+                        />
+                      </label>
+                      <span class="pb-1.5 text-xs font-bold text-prode-muted">—</span>
+                      <label class="w-10">
+                        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">V</span>
+                        <input
+                          type="number"
+                          min="0"
+                          [disabled]="isMatchFinalized(m)"
+                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          [ngModel]="draft()[m.id]?.away ?? 0"
+                          (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
+                        />
+                      </label>
+                      <div class="flex flex-col gap-1">
+                        @if (!isMatchFinalized(m)) {
+                          <button
+                            type="button"
+                            (click)="saveResult(m)"
+                            [disabled]="savingId() === m.id"
+                            class="mb-px inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-400 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:opacity-50"
+                          >
+                            @if (savingId() === m.id) {
+                              <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
+                            }
+                            @if (isMatchPending(m)) {
+                              Cargar
+                            } @else {
+                              Act.
+                            }
+                          </button>
+                          @if (!isMatchPending(m)) {
+                            <button
+                              type="button"
+                              (click)="finalizeMatch(m)"
+                              [disabled]="finalizingId() === m.id"
+                              class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:opacity-50"
+                            >
+                              @if (finalizingId() === m.id) {
+                                <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
+                              }
+                              Finalizar
+                            </button>
+                          }
+                        } @else {
+                          <button
+                            type="button"
+                            (click)="unfinalizeMatch(m)"
+                            [disabled]="unfinalizingId() === m.id"
+                            class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-amber-400/40 bg-amber-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:opacity-50"
+                          >
+                            @if (unfinalizingId() === m.id) {
+                              <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
+                            }
+                            Reabrir
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
       }
-    </ul>
+    </div>
   }
 
-  <div class="card-sport space-y-4 p-4 sm:p-5">
+  <div class="card-sport space-y-3 p-4">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-gold">Torneo</p>
-      <h3 class="font-display text-xl tracking-wide text-white">Campeón y goleador oficial</h3>
+      <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">Campeón y goleador oficial</h3>
       <p class="mt-1 text-xs text-prode-muted">
         Cada acierto suma 50 pts. La comparación ignora mayúsculas y tildes. Al guardar se recalcula el ranking.
       </p>
     </div>
-    <div class="grid gap-3 sm:grid-cols-2">
+    <div class="grid gap-2.5 sm:grid-cols-2">
       <label class="block">
         <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">Campeón</span>
         <input
           type="text"
-          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
+          class="w-full rounded-lg border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
           [ngModel]="tournamentChampion()"
           (ngModelChange)="tournamentChampion.set($event)"
           placeholder="Ej. Argentina"
@@ -244,7 +272,7 @@
         <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">Goleador</span>
         <input
           type="text"
-          class="w-full rounded-xl border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
+          class="w-full rounded-lg border border-prode-border bg-prode-bg px-3 py-2 text-sm text-white outline-none ring-prode-accent/30 focus:ring-2"
           [ngModel]="tournamentTopScorer()"
           (ngModelChange)="tournamentTopScorer.set($event)"
           placeholder="Ej. Lionel Messi"
@@ -255,7 +283,7 @@
       type="button"
       (click)="saveTournamentResults()"
       [disabled]="savingTournamentResults()"
-      class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-prode-gold/90 to-amber-400 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-prode-bg disabled:opacity-50"
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-prode-gold/90 to-amber-400 px-4 py-2 text-xs font-bold uppercase tracking-wide text-prode-bg disabled:opacity-50"
     >
       @if (savingTournamentResults()) {
         <lucide-icon name="loader-2" class="animate-spin" [size]="16" />

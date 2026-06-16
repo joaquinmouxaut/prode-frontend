@@ -16,7 +16,11 @@ import { BRANDING } from '../../core/constants/branding';
 import { AuthService } from '../../core/services/auth.service';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { PredictionsService } from '../../core/services/predictions.service';
-import { MATCH_PHASE_LABELS, type MatchPhase } from '../../core/models/match-phase';
+import {
+  formatMatchPhaseMinimal,
+  MATCH_PHASE_LABELS,
+  type MatchPhase,
+} from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import {
@@ -63,6 +67,7 @@ export class Fixture {
   private scrolledToToday = false;
 
   protected readonly MATCH_PHASE_LABELS = MATCH_PHASE_LABELS;
+  protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);

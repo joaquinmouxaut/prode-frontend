@@ -89,13 +89,9 @@
 
           @if (isDayExpanded(g.dateKey)) {
             <div class="space-y-2 border-t border-prode-border/60 px-2 pb-2 pt-2">
-              @for (sec of g.sections; track trackSection($index, sec)) {
-                <div class="space-y-1.5">
-                  <p class="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-prode-muted">
-                    {{ sec.phaseLabel }}
-                  </p>
-                  <ul class="space-y-2">
-                    @for (m of sec.matches; track trackMatch($index, m)) {
+              <ul class="space-y-2">
+                @for (sec of g.sections; track trackSection($index, sec)) {
+                  @for (m of sec.matches; track trackMatch($index, m)) {
                       <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
                         <div class="flex items-start gap-2 p-2.5">
                           <div class="min-w-0 flex-1 space-y-0.5">
@@ -228,10 +224,9 @@
                           }
                         }
                       </li>
-                    }
-                  </ul>
-                </div>
-              }
+                  }
+                }
+              </ul>
             </div>
           }
         </div>

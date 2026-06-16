@@ -1,4 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  inject,
+  Injector,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { formatMatchPhaseMinimal } from '../../core/models/match-phase';
@@ -31,7 +40,11 @@ import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 export class Participant {
   private readonly route = inject(ActivatedRoute);
   private readonly participantsApi = inject(ParticipantsService);
+  private readonly injector = inject(Injector);
+  private readonly platformId = inject(PLATFORM_ID);
   protected readonly auth = inject(AuthService);
+
+  protected readonly todayDateKey = computed(() => fixtureGroupTodayDateKey());
 
   protected readonly formatMatchPhaseMinimal = formatMatchPhaseMinimal;
   protected readonly formatMatchScore = formatMatchScore;
@@ -53,6 +66,7 @@ export class Participant {
           this.profile.set(profile);
           this.initDayExpansion(profile);
           this.loading.set(false);
+          this.scheduleScrollToToday();
         },
         error: () => {
           this.error.set('No pudimos cargar el perfil de este participante.');
@@ -91,14 +105,47 @@ export class Participant {
   }
 
   isTodayDay(dateKey: string): boolean {
-    return dateKey === fixtureGroupTodayDateKey();
+    return dateKey === this.todayDateKey();
   }
 
   private initDayExpansion(profile: ParticipantProfile): void {
     const today = fixtureGroupTodayDateKey();
     const groups = this.buildPredictionGroups(profile);
     const dayKeys = new Set(groups.map((group) => group.dateKey));
-    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set(dayKeys.size ? [groups[0].dateKey] : []));
+    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set());
+  }
+
+  private scheduleScrollToToday(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    afterNextRender(
+      () => {
+        const targetKey = this.resolveScrollDayKey();
+        if (!targetKey) {
+          return;
+        }
+        document.getElementById(`participant-day-${targetKey}`)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /** Día de hoy si hay partidos; si no, el próximo con fixture o el último pasado. */
+  private resolveScrollDayKey(): string | null {
+    const groups = this.groupedPredictions();
+    if (groups.length === 0) {
+      return null;
+    }
+    const today = fixtureGroupTodayDateKey();
+    if (groups.some((group) => group.dateKey === today)) {
+      return today;
+    }
+    const upcoming = groups.find((group) => group.dateKey > today);
+    return upcoming?.dateKey ?? groups[groups.length - 1]?.dateKey ?? null;
   }
 
   private buildPredictionGroups(source: ParticipantProfile | null = this.profile()): Array<{

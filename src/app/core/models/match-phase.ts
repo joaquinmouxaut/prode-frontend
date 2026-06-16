@@ -33,7 +33,7 @@ export const MATCH_PHASE_LABELS: Record<MatchPhase, string> = {
 export function formatMatchPhaseMinimal(phase: MatchPhase): string {
   if (GROUP_PHASES.has(phase)) {
     const jornada = phase.slice(-1);
-    return `Grupos · J${jornada}`;
+    return `Grupos · Jornada ${jornada}`;
   }
   return MATCH_PHASE_LABELS[phase];
 }

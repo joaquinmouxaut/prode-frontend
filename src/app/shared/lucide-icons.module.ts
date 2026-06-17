@@ -6,6 +6,8 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
+  ChevronsUpDown,
   Goal,
   LayoutGrid,
   Loader2,
@@ -20,6 +22,7 @@ import {
   Trophy,
   UserPlus,
   Users,
+  Utensils,
   Zap,
 } from 'lucide-angular';
 
@@ -32,6 +35,8 @@ import {
       CheckCircle,
       ChevronDown,
       ChevronRight,
+      ChevronUp,
+      ChevronsUpDown,
       Goal,
       LayoutGrid,
       Loader2,
@@ -45,6 +50,7 @@ import {
       Trophy,
       UserPlus,
       Users,
+      Utensils,
       Zap,
     }),
   ],

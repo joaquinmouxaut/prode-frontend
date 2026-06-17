@@ -4,8 +4,8 @@
       <p class="eyebrow text-prode-gold">Ranking</p>
       <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">Tabla de posiciones</h2>
       <p class="mt-0.5 max-w-xl text-sm text-prode-muted">
-        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un jugador para ver su historial.
-        Ver <a routerLink="/reglas" class="text-link">reglas</a>.
+        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un encabezado para ordenar y un
+        jugador para ver su historial. Ver <a routerLink="/reglas" class="text-link">reglas</a>.
       </p>
     </div>
     <button
@@ -29,49 +29,158 @@
     <div class="card-sport p-8 text-center text-prode-muted">Todavía no hay usuarios o puntos.</div>
   } @else {
     <div class="card-sport overflow-x-auto">
-      <table class="leaderboard-table w-full min-w-[34rem] border-collapse text-left text-sm">
+      <table class="leaderboard-table w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm">
         <thead>
           <tr class="border-b border-prode-border text-[10px] uppercase tracking-wider text-prode-muted md:text-xs">
-            <th class="px-2 py-2 font-semibold md:px-4 md:py-3">#</th>
-            <th class="px-2 py-2 font-semibold md:px-4 md:py-3">Jugador</th>
+            <th class="px-1.5 py-1.5 font-semibold md:px-4 md:py-3">Jugador</th>
             @if (tournamentPicksVisible()) {
               <th class="hidden px-4 py-3 font-semibold lg:table-cell">Prode inicial</th>
             }
-            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">Total</th>
-            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
-              <span class="lg:hidden">Part.</span>
-              <span class="hidden lg:inline">Partidos</span>
+            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+              <button
+                type="button"
+                (click)="setSort('total')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('total')"
+              >
+                Total
+                <lucide-icon
+                  [name]="sortIcon('total')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('total')"
+                  [class.text-prode-muted]="!isSorted('total')"
+                  [class.opacity-40]="!isSorted('total')"
+                />
+              </button>
             </th>
-            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">Bonus</th>
-            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
-              <span class="lg:hidden">Gp.</span>
-              <span class="hidden lg:inline">Grupos</span>
+            <th class="grp grp-first px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 1">
+              <button
+                type="button"
+                (click)="setSort('g1')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('g1')"
+              >
+                J1
+                <lucide-icon
+                  [name]="sortIcon('g1')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('g1')"
+                  [class.text-prode-muted]="!isSorted('g1')"
+                  [class.opacity-40]="!isSorted('g1')"
+                />
+              </button>
             </th>
-            <th class="px-2 py-2 text-right font-semibold md:px-4 md:py-3">
-              <span class="lg:hidden">Elim.</span>
-              <span class="hidden lg:inline">Eliminatorias</span>
+            <th class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 2">
+              <button
+                type="button"
+                (click)="setSort('g2')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('g2')"
+              >
+                J2
+                <lucide-icon
+                  [name]="sortIcon('g2')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('g2')"
+                  [class.text-prode-muted]="!isSorted('g2')"
+                  [class.opacity-40]="!isSorted('g2')"
+                />
+              </button>
+            </th>
+            <th class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 3">
+              <button
+                type="button"
+                (click)="setSort('g3')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('g3')"
+              >
+                J3
+                <lucide-icon
+                  [name]="sortIcon('g3')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('g3')"
+                  [class.text-prode-muted]="!isSorted('g3')"
+                  [class.opacity-40]="!isSorted('g3')"
+                />
+              </button>
+            </th>
+            <th class="grp grp-last px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+              <button
+                type="button"
+                (click)="setSort('groups')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('groups')"
+              >
+                <span class="lg:hidden">Gp.</span>
+                <span class="hidden lg:inline">Grupos</span>
+                <lucide-icon
+                  [name]="sortIcon('groups')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('groups')"
+                  [class.text-prode-muted]="!isSorted('groups')"
+                  [class.opacity-40]="!isSorted('groups')"
+                />
+              </button>
+            </th>
+            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+              <button
+                type="button"
+                (click)="setSort('knockout')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('knockout')"
+              >
+                <span class="lg:hidden">Elim.</span>
+                <span class="hidden lg:inline">Eliminatorias</span>
+                <lucide-icon
+                  [name]="sortIcon('knockout')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('knockout')"
+                  [class.text-prode-muted]="!isSorted('knockout')"
+                  [class.opacity-40]="!isSorted('knockout')"
+                />
+              </button>
+            </th>
+            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+              <button
+                type="button"
+                (click)="setSort('bonus')"
+                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                [class.text-prode-gold]="isSorted('bonus')"
+              >
+                Bonus
+                <lucide-icon
+                  [name]="sortIcon('bonus')"
+                  [size]="12"
+                  [class.text-prode-gold]="isSorted('bonus')"
+                  [class.text-prode-muted]="!isSorted('bonus')"
+                  [class.opacity-40]="!isSorted('bonus')"
+                />
+              </button>
             </th>
           </tr>
         </thead>
         <tbody>
-          @for (row of rows(); track trackRow($index, row); let i = $index) {
+          @for (row of sortedRows(); track trackRow($index, row)) {
+            @let pos = position(row);
+            @let acc = accolade(row);
             <tr
               class="border-b border-prode-border/60 transition hover:bg-prode-elevated/40"
               [class.bg-prode-accent/5]="isMe(row)"
             >
-              <td class="px-2 py-2 font-bold text-white md:px-4 md:py-3">{{ i + 1 }}</td>
-              <td class="px-2 py-2 md:px-4 md:py-3">
-                <div class="flex items-center gap-1.5 md:gap-2">
-                  @if (i === 0) {
-                    <lucide-icon name="trophy" class="shrink-0 text-prode-gold" [size]="16" />
-                  } @else if (i === 1) {
-                    <lucide-icon name="medal" class="shrink-0 text-slate-300" [size]="16" />
-                  } @else if (i === 2) {
-                    <lucide-icon name="medal" class="shrink-0 text-amber-700" [size]="16" />
+              <td class="px-1.5 py-1.5 md:px-4 md:py-3">
+                <div class="flex items-center gap-1.5">
+                  @if (pos === 1) {
+                    <lucide-icon name="trophy" class="shrink-0 text-prode-gold" [size]="14" />
+                  } @else if (pos === 2) {
+                    <lucide-icon name="medal" class="shrink-0 text-slate-300" [size]="14" />
+                  } @else if (pos === 3) {
+                    <lucide-icon name="medal" class="shrink-0 text-amber-700" [size]="14" />
+                  } @else if (acc.tone === 'last') {
+                    <lucide-icon name="utensils" class="shrink-0 text-amber-300" [size]="14" />
                   } @else {
-                    <lucide-icon name="users" class="shrink-0 text-prode-muted" [size]="16" />
+                    <lucide-icon name="users" class="shrink-0 text-prode-muted" [size]="14" />
                   }
-                  <div class="min-w-0">
+                  <div class="min-w-0 leading-tight">
                     <p class="truncate font-medium text-white">
                       <a
                         [routerLink]="['/participantes', row.user.id]"
@@ -85,6 +194,14 @@
                           >Vos</span
                         >
                       }
+                    </p>
+                    <p
+                      class="flex items-center gap-1 text-[9px] font-semibold uppercase leading-none tracking-wide md:text-[10px]"
+                      [class.text-prode-gold]="acc.tone === 'winner'"
+                      [class.text-prode-muted]="acc.tone === 'loser'"
+                      [class.text-amber-300]="acc.tone === 'last'"
+                    >
+                      {{ acc.label }}
                     </p>
                   </div>
                 </div>
@@ -101,24 +218,30 @@
                   </p>
                 </td>
               }
-              <td class="px-2 py-2 text-right font-display text-base text-prode-gold md:px-4 md:py-3 md:text-xl">
+              <td class="px-1.5 py-1.5 text-right font-display text-sm text-prode-gold md:px-4 md:py-3 md:text-xl">
                 {{ row.total }}
               </td>
-              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
-                {{ row.matchPoints }}
+              <td class="grp grp-first px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
+                {{ groupPoints(row, 'GROUPS_1') }}
               </td>
-              <td class="px-2 py-2 text-right font-semibold text-prode-gold md:px-4 md:py-3">
+              <td class="grp px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
+                {{ groupPoints(row, 'GROUPS_2') }}
+              </td>
+              <td class="grp px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
+                {{ groupPoints(row, 'GROUPS_3') }}
+              </td>
+              <td class="grp grp-last px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3">
+                {{ row.groupsPoints }}
+              </td>
+              <td class="px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3">
+                {{ row.knockoutPoints }}
+              </td>
+              <td class="px-1.5 py-1.5 text-right font-semibold text-prode-gold md:px-4 md:py-3">
                 @if (row.championPoints + row.topScorerPoints > 0) {
                   +{{ row.championPoints + row.topScorerPoints }}
                 } @else {
                   —
                 }
-              </td>
-              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
-                {{ row.groupsPoints }}
-              </td>
-              <td class="px-2 py-2 text-right font-semibold text-white md:px-4 md:py-3">
-                {{ row.knockoutPoints }}
               </td>
             </tr>
           }

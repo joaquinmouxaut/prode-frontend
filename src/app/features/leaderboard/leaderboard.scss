@@ -4,15 +4,28 @@
     white-space: nowrap;
   }
 
-  td:nth-child(2) {
+  td:first-child {
     white-space: normal;
-    min-width: 6.5rem;
-    max-width: 9rem;
+    min-width: 5.5rem;
+    max-width: 8rem;
   }
 
   @media (min-width: 640px) {
-    td:nth-child(2) {
+    td:first-child {
       max-width: 14rem;
     }
+  }
+
+  // Bloque de columnas de la fase de grupos (J1/J2/J3 + total).
+  .grp {
+    background-color: rgb(255 255 255 / 2.5%);
+  }
+
+  .grp-first {
+    border-left: 1px solid rgb(255 255 255 / 8%);
+  }
+
+  .grp-last {
+    border-right: 1px solid rgb(255 255 255 / 8%);
   }
 }

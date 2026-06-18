@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Logo asset pipeline (reproducible source/scripts, not shipped)
+/.logo-work

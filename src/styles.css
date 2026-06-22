@@ -102,3 +102,17 @@
     @apply w-full rounded-lg border border-prode-border bg-prode-bg px-3 py-3.5 text-base text-white outline-none ring-prode-accent/40 placeholder:text-stone-600 focus:ring-2 sm:text-sm sm:py-3;
   }
 }
+
+/*
+ * La extensión Bitwarden inyecta un contenedor fijo (#bit-notification-bar) con
+ * z-index máximo arriba a la derecha que captura los clicks aunque su iframe
+ * esté fuera de pantalla, bloqueando botones del navbar y del lado derecho.
+ * Es un artefacto de la extensión (no de la app), así que lo ocultamos por
+ * completo y le quitamos toda capacidad de interacción.
+ */
+#bit-notification-bar,
+#bit-notification-bar-iframe {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}

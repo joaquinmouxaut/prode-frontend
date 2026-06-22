@@ -240,6 +240,36 @@
                       </div>
                     </div>
                   </div>
+                  @if (isKnockoutMatch(m) && !isMatchFinalized(m)) {
+                    <div class="border-t border-prode-border/60 px-2.5 py-2">
+                      <p class="mb-1 text-[10px] font-bold uppercase tracking-wider text-prode-muted">
+                        Equipo que avanza
+                        @if (isAdvancerLocked(m.id)) {
+                          <span class="ml-1 font-normal normal-case text-prode-muted/80">(según el marcador)</span>
+                        } @else {
+                          <span class="ml-1 font-normal normal-case text-amber-200/80">(empate: definir por penales)</span>
+                        }
+                      </p>
+                      <div class="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          (click)="setAdvancingTeam(m.id, 'HOME')"
+                          [disabled]="isAdvancerLocked(m.id)"
+                          [class]="advancerButtonClass(m.id, 'HOME')"
+                        >
+                          {{ m.homeTeam }}
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setAdvancingTeam(m.id, 'AWAY')"
+                          [disabled]="isAdvancerLocked(m.id)"
+                          [class]="advancerButtonClass(m.id, 'AWAY')"
+                        >
+                          {{ m.awayTeam }}
+                        </button>
+                      </div>
+                    </div>
+                  }
                 </li>
               }
             </ul>

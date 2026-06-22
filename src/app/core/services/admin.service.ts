@@ -1,11 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import type { MatchDecision, TeamSide } from '../models/match.model';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
 
 export interface SetMatchResultDto {
   homeGoals: number;
   awayGoals: number;
+  winnerSide?: TeamSide;
+  decidedBy?: MatchDecision;
 }
 
 export interface SetMatchResultResponse {

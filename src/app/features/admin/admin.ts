@@ -2,8 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { AdminService, type FixtureSyncStatusResponse } from '../../core/services/admin.service';
-import { formatMatchPhaseLabel, MATCH_PHASE_LABELS } from '../../core/models/match-phase';
-import type { Match } from '../../core/models/match.model';
+import {
+  formatMatchPhaseLabel,
+  isKnockoutPhase,
+  MATCH_PHASE_LABELS,
+} from '../../core/models/match-phase';
+import type { Match, TeamSide } from '../../core/models/match.model';
 import {
   fixtureGroupDateKey,
   fixtureGroupTodayDateKey,
@@ -18,10 +22,15 @@ function isMatchPending(match: Match): boolean {
   return match.homeGoals == null || match.awayGoals == null;
 }
 
-function draftGoalsForMatch(match: Match): { home: number; away: number } {
+function draftGoalsForMatch(match: Match): {
+  home: number;
+  away: number;
+  advancingTeam: TeamSide | null;
+} {
   return {
     home: match.homeGoals ?? 0,
     away: match.awayGoals ?? 0,
+    advancingTeam: match.winnerSide ?? null,
   };
 }
 
@@ -42,7 +51,9 @@ export class Admin {
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
   protected readonly matches = signal<Match[]>([]);
-  protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
+  protected readonly draft = signal<
+    Record<number, { home: number; away: number; advancingTeam: TeamSide | null }>
+  >({});
   protected readonly savingId = signal<number | null>(null);
   protected readonly finalizingId = signal<number | null>(null);
   protected readonly unfinalizingId = signal<number | null>(null);
@@ -59,6 +70,9 @@ export class Admin {
   );
   protected readonly groupedResultMatches = computed(() => this.buildResultGroups(this.resultMatches()));
   protected readonly expandedDayKeys = signal<Set<string>>(new Set());
+  private readonly matchById = computed(
+    () => new Map(this.matches().map((m) => [m.id, m])),
+  );
 
   protected readonly pendingCount = computed(() => this.matches().filter(isMatchPending).length);
 
@@ -78,7 +92,10 @@ export class Admin {
       next: (matches) => {
         this.matches.set(matches);
         this.initDayExpansion(matches);
-        const draft: Record<number, { home: number; away: number }> = {};
+        const draft: Record<
+          number,
+          { home: number; away: number; advancingTeam: TeamSide | null }
+        > = {};
         for (const m of matches) {
           draft[m.id] = draftGoalsForMatch(m);
         }
@@ -146,20 +163,78 @@ export class Admin {
 
   onGoalsChange(matchId: number, side: 'home' | 'away', value: string | number): void {
     const n = this.clampGoals(value);
-    this.draft.update((d) => ({
-      ...d,
-      [matchId]: {
-        home: side === 'home' ? n : (d[matchId]?.home ?? 0),
-        away: side === 'away' ? n : (d[matchId]?.away ?? 0),
-      },
-    }));
+    this.draft.update((d) => {
+      const current = d[matchId] ?? { home: 0, away: 0, advancingTeam: null };
+      const home = side === 'home' ? n : current.home;
+      const away = side === 'away' ? n : current.away;
+      let advancingTeam = current.advancingTeam;
+      const match = this.matchById().get(matchId);
+      if (match && isKnockoutPhase(match.phase)) {
+        const derived = home > away ? 'HOME' : away > home ? 'AWAY' : null;
+        if (derived) {
+          advancingTeam = derived;
+        }
+      } else {
+        advancingTeam = null;
+      }
+      return { ...d, [matchId]: { home, away, advancingTeam } };
+    });
+  }
+
+  isKnockoutMatch(match: Match): boolean {
+    return isKnockoutPhase(match.phase);
+  }
+
+  isAdvancerLocked(matchId: number): boolean {
+    const d = this.draft()[matchId];
+    if (!d) {
+      return false;
+    }
+    return d.home !== d.away;
+  }
+
+  advancingTeamDraft(matchId: number): TeamSide | null {
+    return this.draft()[matchId]?.advancingTeam ?? null;
+  }
+
+  setAdvancingTeam(matchId: number, side: TeamSide): void {
+    this.draft.update((d) => {
+      const current = d[matchId] ?? { home: 0, away: 0, advancingTeam: null };
+      return { ...d, [matchId]: { ...current, advancingTeam: side } };
+    });
+  }
+
+  advancerButtonClass(matchId: number, side: TeamSide): string {
+    const base =
+      'truncate rounded-lg border px-2 py-1 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+    return this.advancingTeamDraft(matchId) === side
+      ? `${base} border-emerald-400 bg-emerald-500/15 text-emerald-100`
+      : `${base} border-prode-border bg-prode-bg text-prode-muted hover:text-white`;
   }
 
   saveResult(match: Match): void {
     const d = this.draft()[match.id];
     if (!d) return;
+
+    let winnerSide: TeamSide | undefined;
+    if (isKnockoutPhase(match.phase)) {
+      const derived =
+        d.home > d.away ? 'HOME' : d.away > d.home ? 'AWAY' : d.advancingTeam;
+      if (!derived) {
+        this.toast.error('Elegí qué equipo avanza antes de guardar.');
+        return;
+      }
+      winnerSide = derived;
+    }
+
     this.savingId.set(match.id);
-    this.adminApi.setMatchResult(match.id, { homeGoals: d.home, awayGoals: d.away }).subscribe({
+    this.adminApi
+      .setMatchResult(match.id, {
+        homeGoals: d.home,
+        awayGoals: d.away,
+        ...(winnerSide ? { winnerSide } : {}),
+      })
+      .subscribe({
       next: (res) => {
         this.matches.update((list) =>
           list.map((m) =>
@@ -168,6 +243,7 @@ export class Admin {
                   ...m,
                   homeGoals: d.home,
                   awayGoals: d.away,
+                  winnerSide: winnerSide ?? m.winnerSide,
                   resultSource: 'ADMIN',
                 }
               : m,
@@ -175,7 +251,11 @@ export class Admin {
         );
         this.draft.update((current) => ({
           ...current,
-          [match.id]: { home: d.home, away: d.away },
+          [match.id]: {
+            home: d.home,
+            away: d.away,
+            advancingTeam: winnerSide ?? d.advancingTeam,
+          },
         }));
         this.savingId.set(null);
         this.refreshSyncStatus();

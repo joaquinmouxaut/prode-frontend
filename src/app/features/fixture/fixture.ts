@@ -19,10 +19,11 @@ import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { PredictionsService } from '../../core/services/predictions.service';
 import {
   formatMatchPhaseLabel,
+  isKnockoutPhase,
   MATCH_PHASE_LABELS,
   type MatchPhase,
 } from '../../core/models/match-phase';
-import type { Match } from '../../core/models/match.model';
+import type { Match, TeamSide } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import type { User } from '../../core/models/user.model';
 import {
@@ -83,8 +84,10 @@ export class Fixture {
   protected readonly predictionByMatchId = signal<Map<number, Prediction>>(new Map());
   protected readonly visiblePredictions = signal<Prediction[]>([]);
   protected readonly groupParticipants = signal<Pick<User, 'id' | 'name'>[]>([]);
-  /** Borrador local: matchId -> goles */
-  protected readonly draft = signal<Record<number, { home: number; away: number }>>({});
+  /** Borrador local: matchId -> goles + equipo que avanza (mata-mata) */
+  protected readonly draft = signal<
+    Record<number, { home: number; away: number; advancingTeam: TeamSide | null }>
+  >({});
   protected readonly savingId = signal<number | null>(null);
   protected readonly rowError = signal<string | null>(null);
   protected readonly expandedPredictionMatchIds = signal<Set<number>>(new Set());
@@ -92,6 +95,9 @@ export class Fixture {
 
   protected readonly groups = computed(() => this.buildGroups(this.matches()));
   protected readonly todayDateKey = computed(() => fixtureGroupTodayDateKey());
+  private readonly matchById = computed(
+    () => new Map(this.matches().map((m) => [m.id, m])),
+  );
 
   protected readonly isMatchStarted = isMatchStarted;
   protected readonly isMatchInProgress = isMatchInProgress;
@@ -127,14 +133,21 @@ export class Fixture {
           leaderboard.rows.map((row) => ({ id: row.user.id, name: row.user.name })),
         );
         const map = new Map<number, Prediction>();
-        const draft: Record<number, { home: number; away: number }> = {};
+        const draft: Record<
+          number,
+          { home: number; away: number; advancingTeam: TeamSide | null }
+        > = {};
         for (const p of predictions.filter((item) => item.userId === user.id)) {
           map.set(p.matchId, p);
-          draft[p.matchId] = { home: p.homeGoals, away: p.awayGoals };
+          draft[p.matchId] = {
+            home: p.homeGoals,
+            away: p.awayGoals,
+            advancingTeam: p.advancingTeam ?? null,
+          };
         }
         for (const m of sorted) {
           if (!draft[m.id]) {
-            draft[m.id] = { home: 0, away: 0 };
+            draft[m.id] = { home: 0, away: 0, advancingTeam: null };
           }
         }
         this.predictionByMatchId.set(map);
@@ -208,13 +221,57 @@ export class Fixture {
 
   onGoalsChange(matchId: number, side: 'home' | 'away', value: string | number): void {
     const n = this.clampGoals(typeof value === 'number' ? String(value) : value);
-    this.draft.update((d) => ({
-      ...d,
-      [matchId]: {
-        home: side === 'home' ? n : (d[matchId]?.home ?? 0),
-        away: side === 'away' ? n : (d[matchId]?.away ?? 0),
-      },
-    }));
+    this.draft.update((d) => {
+      const current = d[matchId] ?? { home: 0, away: 0, advancingTeam: null };
+      const home = side === 'home' ? n : current.home;
+      const away = side === 'away' ? n : current.away;
+      let advancingTeam = current.advancingTeam;
+      const match = this.matchById().get(matchId);
+      if (match && isKnockoutPhase(match.phase)) {
+        // Marcador decisivo: el que avanza queda autoseleccionado y bloqueado.
+        // Empate: se conserva la elección manual del jugador.
+        const derived = home > away ? 'HOME' : away > home ? 'AWAY' : null;
+        if (derived) {
+          advancingTeam = derived;
+        }
+      } else {
+        advancingTeam = null;
+      }
+      return { ...d, [matchId]: { home, away, advancingTeam } };
+    });
+  }
+
+  /** True para partidos de eliminatoria (sin empate posible). */
+  isKnockoutMatch(match: Match): boolean {
+    return isKnockoutPhase(match.phase);
+  }
+
+  /** El equipo que avanza queda bloqueado cuando el marcador predicho es decisivo. */
+  isAdvancerLocked(matchId: number): boolean {
+    const d = this.draft()[matchId];
+    if (!d) {
+      return false;
+    }
+    return d.home !== d.away;
+  }
+
+  advancingTeamDraft(matchId: number): TeamSide | null {
+    return this.draft()[matchId]?.advancingTeam ?? null;
+  }
+
+  setAdvancingTeam(matchId: number, side: TeamSide): void {
+    this.draft.update((d) => {
+      const current = d[matchId] ?? { home: 0, away: 0, advancingTeam: null };
+      return { ...d, [matchId]: { ...current, advancingTeam: side } };
+    });
+  }
+
+  advancerButtonClass(matchId: number, side: TeamSide): string {
+    const base =
+      'truncate rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+    return this.advancingTeamDraft(matchId) === side
+      ? `${base} border-prode-accent bg-prode-accent/15 text-amber-100`
+      : `${base} border-prode-border bg-prode-bg text-prode-muted hover:text-white`;
   }
 
   savePrediction(match: Match): void {
@@ -225,6 +282,18 @@ export class Fixture {
     }
     const d = this.draft()[match.id];
     if (!d) return;
+
+    let advancingTeam: TeamSide | undefined;
+    if (isKnockoutPhase(match.phase)) {
+      const derived =
+        d.home > d.away ? 'HOME' : d.away > d.home ? 'AWAY' : d.advancingTeam;
+      if (!derived) {
+        this.rowError.set('Elegí qué equipo avanza a la próxima ronda.');
+        return;
+      }
+      advancingTeam = derived;
+    }
+
     this.rowError.set(null);
     this.savingId.set(match.id);
     const existing = this.predictionByMatchId().get(match.id);
@@ -232,12 +301,14 @@ export class Fixture {
       ? this.predictionsApi.updatePrediction(existing.id, {
           homeGoals: d.home,
           awayGoals: d.away,
+          ...(advancingTeam ? { advancingTeam } : {}),
         })
       : this.predictionsApi.createPrediction({
           userId: user.id,
           matchId: match.id,
           homeGoals: d.home,
           awayGoals: d.away,
+          ...(advancingTeam ? { advancingTeam } : {}),
         });
 
     req$.subscribe({
@@ -259,6 +330,41 @@ export class Fixture {
         }
       },
     });
+  }
+
+  /** Nombre del equipo que avanzó según el resultado oficial (mata-mata). */
+  advancerTeamName(match: Match): string | null {
+    if (!match.winnerSide) {
+      return null;
+    }
+    return match.winnerSide === 'HOME' ? match.homeTeam : match.awayTeam;
+  }
+
+  /** Nombre del equipo que el jugador eligió como avance. */
+  predictionAdvancerName(match: Match, prediction: Prediction): string | null {
+    const side =
+      prediction.advancingTeam ??
+      (prediction.homeGoals > prediction.awayGoals
+        ? 'HOME'
+        : prediction.awayGoals > prediction.homeGoals
+          ? 'AWAY'
+          : null);
+    if (!side) {
+      return null;
+    }
+    return side === 'HOME' ? match.homeTeam : match.awayTeam;
+  }
+
+  /** Etiqueta de cómo se definió el partido (prórroga/penales). */
+  decisionLabel(match: Match): string | null {
+    switch (match.decidedBy) {
+      case 'PENALTIES':
+        return 'penales';
+      case 'EXTRA_TIME':
+        return 'prórroga';
+      default:
+        return null;
+    }
   }
 
   groupPredictionEntriesForMatch(match: Match): GroupPredictionEntry[] {

@@ -10,7 +10,11 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, switchMap } from 'rxjs';
-import { formatMatchPhaseLabel } from '../../core/models/match-phase';
+import {
+  formatMatchPhaseLabel,
+  type MatchPhase,
+  type MatchStage,
+} from '../../core/models/match-phase';
 import type { Match } from '../../core/models/match.model';
 import type { Prediction } from '../../core/models/prediction.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,11 +24,15 @@ import {
 } from '../../core/services/participants.service';
 import { PredictionsService } from '../../core/services/predictions.service';
 import {
-  fixtureGroupDateKey,
   fixtureGroupTodayDateKey,
   formatArgentinaMatchTime,
-  formatFixtureGroupDayHeading,
 } from '../../core/utils/argentina-datetime';
+import {
+  buildFixtureTree,
+  resolveActivePath,
+  type FixtureJornadaNode,
+  type FixtureStageNode,
+} from '../../core/utils/fixture-grouping';
 import {
   formatMatchScore,
   hasScoreableResult,
@@ -65,9 +73,14 @@ export class Participant {
   protected readonly error = signal<string | null>(null);
   protected readonly profile = signal<ParticipantProfile | null>(null);
   protected readonly matches = signal<Match[]>([]);
+  protected readonly expandedStageKeys = signal<Set<MatchStage>>(new Set());
+  protected readonly expandedJornadaKeys = signal<Set<MatchPhase>>(new Set());
   protected readonly expandedDayKeys = signal<Set<string>>(new Set());
-  protected readonly groupedMatchEntries = computed(() =>
-    this.buildMatchEntryGroups(this.profile(), this.matches()),
+  protected readonly stages = computed(() =>
+    buildFixtureTree(this.startedMatchEntries(), (entry) => entry.match),
+  );
+  private readonly startedMatchEntries = computed(() =>
+    this.buildStartedMatchEntries(this.profile(), this.matches()),
   );
 
   constructor() {
@@ -84,7 +97,7 @@ export class Participant {
         next: ({ profile, matches }) => {
           this.profile.set(profile);
           this.matches.set(matches);
-          this.initDayExpansion(profile, matches);
+          this.initExpansion();
           this.loading.set(false);
           this.scheduleScrollToToday();
         },
@@ -103,8 +116,42 @@ export class Participant {
     return formatArgentinaMatchTime(iso);
   }
 
+  trackStage(_: number, s: FixtureStageNode<ParticipantMatchEntry>): string {
+    return s.stage;
+  }
+
+  trackJornada(_: number, j: FixtureJornadaNode<ParticipantMatchEntry>): string {
+    return j.phase;
+  }
+
   trackMatchDay(_: number, group: { dateKey: string }): string {
     return group.dateKey;
+  }
+
+  isStageExpanded(stage: MatchStage): boolean {
+    return this.expandedStageKeys().has(stage);
+  }
+
+  toggleStage(stage: MatchStage): void {
+    this.expandedStageKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(stage)) next.delete(stage);
+      else next.add(stage);
+      return next;
+    });
+  }
+
+  isJornadaExpanded(phase: MatchPhase): boolean {
+    return this.expandedJornadaKeys().has(phase);
+  }
+
+  toggleJornada(phase: MatchPhase): void {
+    this.expandedJornadaKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(phase)) next.delete(phase);
+      else next.add(phase);
+      return next;
+    });
   }
 
   isDayExpanded(dateKey: string): boolean {
@@ -120,19 +167,31 @@ export class Participant {
     });
   }
 
-  matchCountForDay(group: { entries: ParticipantMatchEntry[] }): number {
-    return group.entries.length;
-  }
-
   isTodayDay(dateKey: string): boolean {
     return dateKey === this.todayDateKey();
   }
 
-  private initDayExpansion(profile: ParticipantProfile, matches: Match[]): void {
-    const today = fixtureGroupTodayDateKey();
-    const groups = this.buildMatchEntryGroups(profile, matches);
-    const dayKeys = new Set(groups.map((group) => group.dateKey));
-    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set());
+  stageHasToday(stage: FixtureStageNode<ParticipantMatchEntry>): boolean {
+    const today = this.todayDateKey();
+    return stage.jornadas.some((j) => j.days.some((d) => d.dateKey === today));
+  }
+
+  jornadaHasToday(jornada: FixtureJornadaNode<ParticipantMatchEntry>): boolean {
+    const today = this.todayDateKey();
+    return jornada.days.some((d) => d.dateKey === today);
+  }
+
+  private initExpansion(): void {
+    const path = resolveActivePath(this.stages(), fixtureGroupTodayDateKey());
+    if (!path) {
+      this.expandedStageKeys.set(new Set());
+      this.expandedJornadaKeys.set(new Set());
+      this.expandedDayKeys.set(new Set());
+      return;
+    }
+    this.expandedStageKeys.set(new Set([path.stage]));
+    this.expandedJornadaKeys.set(new Set([path.phase]));
+    this.expandedDayKeys.set(new Set([path.dateKey]));
   }
 
   private scheduleScrollToToday(): void {
@@ -156,22 +215,15 @@ export class Participant {
 
   /** Día de hoy si hay partidos; si no, el próximo con fixture o el último pasado. */
   private resolveScrollDayKey(): string | null {
-    const groups = this.groupedMatchEntries();
-    if (groups.length === 0) {
-      return null;
-    }
-    const today = fixtureGroupTodayDateKey();
-    if (groups.some((group) => group.dateKey === today)) {
-      return today;
-    }
-    const upcoming = groups.find((group) => group.dateKey > today);
-    return upcoming?.dateKey ?? groups[groups.length - 1]?.dateKey ?? null;
+    const path = resolveActivePath(this.stages(), this.todayDateKey());
+    return path?.dateKey ?? null;
   }
 
   private buildStartedMatchEntries(
-    profile: ParticipantProfile,
+    profile: ParticipantProfile | null,
     matches: Match[],
   ): ParticipantMatchEntry[] {
+    if (!profile) return [];
     const predictionByMatchId = new Map(profile.predictions.map((p) => [p.matchId, p]));
 
     return matches
@@ -181,30 +233,5 @@ export class Participant {
         match,
         prediction: predictionByMatchId.get(match.id) ?? null,
       }));
-  }
-
-  private buildMatchEntryGroups(
-    source: ParticipantProfile | null = this.profile(),
-    matches: Match[] = [],
-  ): Array<{
-    dateKey: string;
-    heading: string;
-    entries: ParticipantMatchEntry[];
-  }> {
-    if (!source) return [];
-
-    const byDate = new Map<string, ParticipantMatchEntry[]>();
-    for (const entry of this.buildStartedMatchEntries(source, matches)) {
-      const dateKey = fixtureGroupDateKey(entry.match.date);
-      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-      byDate.get(dateKey)!.push(entry);
-    }
-
-    const groups = Array.from(byDate.entries()).map(([dateKey, entries]) => ({
-      dateKey,
-      heading: formatFixtureGroupDayHeading(dateKey),
-      entries,
-    }));
-    return groups.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
   }
 }

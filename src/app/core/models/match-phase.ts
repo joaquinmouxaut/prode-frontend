@@ -19,6 +19,31 @@ export function isKnockoutPhase(phase: MatchPhase): boolean {
   return !GROUP_PHASES.has(phase);
 }
 
+/** Etapa de alto nivel del torneo: fase de grupos o mata-mata. */
+export type MatchStage = 'GROUPS' | 'KNOCKOUT';
+
+export const STAGE_LABELS: Record<MatchStage, string> = {
+  GROUPS: 'Fase de grupos',
+  KNOCKOUT: 'Mata-mata',
+};
+
+export function phaseStage(phase: MatchPhase): MatchStage {
+  return GROUP_PHASES.has(phase) ? 'GROUPS' : 'KNOCKOUT';
+}
+
+/** Índice canónico de la fase, para ordenar jornadas. */
+export function phaseOrder(phase: MatchPhase): number {
+  return MATCH_PHASES.indexOf(phase);
+}
+
+/** Etiqueta de jornada para encabezados anidados (sin repetir "Grupos"). */
+export function formatJornadaLabel(phase: MatchPhase): string {
+  if (GROUP_PHASES.has(phase)) {
+    return `Jornada ${phase.slice(-1)}`;
+  }
+  return MATCH_PHASE_LABELS[phase];
+}
+
 export const MATCH_PHASE_LABELS: Record<MatchPhase, string> = {
   GROUPS_1: 'Grupos — Jornada 1',
   GROUPS_2: 'Grupos — Jornada 2',
@@ -48,10 +73,7 @@ export function formatGroupLetter(groupCode: string | null | undefined): string 
 }
 
 /** Etiqueta compacta para tarjetas de partido. */
-export function formatMatchPhaseLabel(
-  phase: MatchPhase,
-  groupCode?: string | null,
-): string {
+export function formatMatchPhaseLabel(phase: MatchPhase, groupCode?: string | null): string {
   if (GROUP_PHASES.has(phase)) {
     const jornada = phase.slice(-1);
     const letter = formatGroupLetter(groupCode);

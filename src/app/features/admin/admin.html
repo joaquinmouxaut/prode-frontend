@@ -2,10 +2,10 @@
   <div class="card-sport space-y-3 p-4">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p class="eyebrow text-prode-accent">
-          Fixture automation
-        </p>
-        <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">Import y sincronización</h3>
+        <p class="eyebrow text-prode-accent">Fixture automation</p>
+        <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">
+          Import y sincronización
+        </h3>
         <p class="mt-1 text-xs text-prode-muted">
           Polling cada 15 minutos durante partidos en curso. Fuera de ventana activa no se consulta.
         </p>
@@ -74,8 +74,8 @@
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Administración</p>
       <h2 class="font-display text-2xl tracking-wide text-white sm:text-3xl">Resultados</h2>
       <p class="mt-1 max-w-xl text-sm text-prode-muted">
-        Cargá o corregí el marcador oficial. Manual y sync API conviven hasta que finalices el partido.
-        El backend recalcula puntos y ranking en cada guardado.
+        Cargá o corregí el marcador oficial. Manual y sync API conviven hasta que finalices el
+        partido. El backend recalcula puntos y ranking en cada guardado.
         @if (pendingCount() > 0) {
           <span class="text-amber-200/90">{{ pendingCount() }} pendiente(s).</span>
         }
@@ -100,29 +100,41 @@
     <div class="card-sport border-rose-500/20 p-6 text-center text-rose-200">
       {{ loadError() }}
     </div>
-  } @else if (groupedResultMatches().length === 0) {
+  } @else if (stages().length === 0) {
     <div class="card-sport p-8 text-center text-prode-muted">
       <lucide-icon name="calendar" class="mx-auto mb-3 text-prode-accent" [size]="32" />
       No hay partidos cargados. Importá el fixture o actualizá la lista.
     </div>
   } @else {
-    <div class="space-y-3">
-      @for (group of groupedResultMatches(); track trackDay($index, group)) {
-        <div class="fixture-day-group card-sport overflow-hidden" [id]="'admin-day-' + group.dateKey">
+    <div class="space-y-4">
+      @for (stage of stages(); track trackStage($index, stage)) {
+        <div
+          class="card-sport overflow-hidden border-l-4"
+          [class.border-l-prode-blue]="stage.stage === 'GROUPS'"
+          [class.border-l-prode-accent]="stage.stage === 'KNOCKOUT'"
+        >
           <button
             type="button"
-            (click)="toggleDay(group.dateKey)"
-            class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-prode-bg/40"
-            [attr.aria-expanded]="isDayExpanded(group.dateKey)"
+            (click)="toggleStage(stage.stage)"
+            class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-prode-elevated/40"
+            [attr.aria-expanded]="isStageExpanded(stage.stage)"
           >
-            <lucide-icon name="calendar" class="shrink-0 text-prode-blue" [size]="16" />
+            <lucide-icon
+              [name]="stage.stage === 'GROUPS' ? 'layout-grid' : 'trophy'"
+              class="shrink-0"
+              [class.text-prode-blue]="stage.stage === 'GROUPS'"
+              [class.text-prode-accent]="stage.stage === 'KNOCKOUT'"
+              [size]="18"
+            />
             <span class="min-w-0 flex-1">
-              <span class="font-display text-base capitalize tracking-wide text-white sm:text-lg">
-                {{ group.heading }}
+              <span class="font-display text-base tracking-wide text-white sm:text-lg">
+                {{ stage.label }}
               </span>
-              <span class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted">
-                {{ matchCountForDay(group) }} partidos
-                @if (isTodayDay(group.dateKey)) {
+              <span
+                class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+              >
+                {{ stage.count }} partidos
+                @if (stageHasToday(stage)) {
                   <span class="text-prode-accent">· Hoy</span>
                 }
               </span>
@@ -130,149 +142,274 @@
             <lucide-icon
               name="chevron-down"
               class="shrink-0 text-prode-muted transition-transform duration-200"
-              [class.rotate-180]="isDayExpanded(group.dateKey)"
-              [size]="18"
+              [class.rotate-180]="isStageExpanded(stage.stage)"
+              [size]="20"
             />
           </button>
 
-          @if (isDayExpanded(group.dateKey)) {
-            <ul class="space-y-2 border-t border-prode-border/60 px-2 pb-2 pt-2">
-              @for (m of group.matches; track trackMatch($index, m)) {
-                <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
-                  <div class="flex items-start gap-2 p-2.5">
-                    <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
-                      <div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-white">
-                        <span class="truncate">{{ m.homeTeam }}</span>
-                        <span class="text-xs text-prode-muted">vs</span>
-                        <span class="truncate">{{ m.awayTeam }}</span>
-                      </div>
-                      <p class="text-[10px] leading-tight text-prode-muted">
-                        {{ formatMatchPhaseLabel(m.phase, m.groupCode) }}
-                      </p>
-                      <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
-                        <span>{{ formatWhen(m.date) }} hs (ARG)</span>
-                        @if (isMatchFinalized(m)) {
-                          <span
-                            class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
-                            >Finalizado</span
-                          >
-                        } @else if (isMatchPending(m)) {
-                          <span
-                            class="rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
-                            >Pendiente</span
-                          >
-                        } @else {
-                          <span
-                            class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
-                            >Con resultado</span
-                          >
+          @if (isStageExpanded(stage.stage)) {
+            <div class="space-y-1.5 border-t border-prode-border/60 p-1.5 sm:space-y-2 sm:p-2.5">
+              @for (jor of stage.jornadas; track trackJornada($index, jor)) {
+                <div
+                  class="overflow-hidden rounded-lg border border-prode-border/60 bg-prode-bg/40"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleJornada(jor.phase)"
+                    class="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors hover:bg-prode-bg/60"
+                    [attr.aria-expanded]="isJornadaExpanded(jor.phase)"
+                  >
+                    <span
+                      class="h-1.5 w-1.5 shrink-0 rounded-full"
+                      [class.bg-prode-blue]="stage.stage === 'GROUPS'"
+                      [class.bg-prode-accent]="stage.stage === 'KNOCKOUT'"
+                    ></span>
+                    <span class="min-w-0 flex-1">
+                      <span class="text-sm font-bold tracking-wide text-stone-100">{{
+                        jor.label
+                      }}</span>
+                      <span
+                        class="ml-2 text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+                      >
+                        {{ jor.count }} partidos
+                        @if (jornadaHasToday(jor)) {
+                          <span class="text-prode-accent">· Hoy</span>
                         }
-                      </p>
-                    </div>
+                      </span>
+                    </span>
+                    <lucide-icon
+                      name="chevron-down"
+                      class="shrink-0 text-prode-muted transition-transform duration-200"
+                      [class.rotate-180]="isJornadaExpanded(jor.phase)"
+                      [size]="16"
+                    />
+                  </button>
 
-                    <div class="relative z-10 flex shrink-0 items-end gap-1">
-                      <label class="w-10">
-                        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">L</span>
-                        <input
-                          type="number"
-                          min="0"
-                          [disabled]="isMatchFinalized(m)"
-                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          [ngModel]="draft()[m.id]?.home ?? 0"
-                          (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
-                        />
-                      </label>
-                      <span class="pb-1.5 text-xs font-bold text-prode-muted">—</span>
-                      <label class="w-10">
-                        <span class="mb-1 block text-[10px] font-bold uppercase text-prode-muted">V</span>
-                        <input
-                          type="number"
-                          min="0"
-                          [disabled]="isMatchFinalized(m)"
-                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          [ngModel]="draft()[m.id]?.away ?? 0"
-                          (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
-                        />
-                      </label>
-                      <div class="flex flex-col gap-1">
-                        @if (!isMatchFinalized(m)) {
+                  @if (isJornadaExpanded(jor.phase)) {
+                    <div
+                      class="space-y-1.5 border-t border-prode-border/50 p-1.5 sm:space-y-2 sm:p-2.5"
+                    >
+                      @for (group of jor.days; track trackDay($index, group)) {
+                        <div
+                          class="fixture-day-group overflow-hidden rounded-lg border border-prode-border/70 bg-prode-surface/70"
+                          [id]="'admin-day-' + group.dateKey"
+                        >
                           <button
                             type="button"
-                            (click)="saveResult(m)"
-                            [disabled]="savingId() === m.id"
-                            class="mb-px inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-400 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                            (click)="toggleDay(group.dateKey)"
+                            class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-prode-bg/40"
+                            [attr.aria-expanded]="isDayExpanded(group.dateKey)"
                           >
-                            @if (savingId() === m.id) {
-                              <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
-                            }
-                            @if (isMatchPending(m)) {
-                              Cargar
-                            } @else {
-                              Act.
-                            }
+                            <lucide-icon
+                              name="calendar"
+                              class="shrink-0 text-prode-blue"
+                              [size]="16"
+                            />
+                            <span class="min-w-0 flex-1">
+                              <span
+                                class="font-display text-base capitalize tracking-wide text-white sm:text-lg"
+                              >
+                                {{ group.heading }}
+                              </span>
+                              <span
+                                class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+                              >
+                                {{ group.items.length }} partidos
+                                @if (isTodayDay(group.dateKey)) {
+                                  <span class="text-prode-accent">· Hoy</span>
+                                }
+                              </span>
+                            </span>
+                            <lucide-icon
+                              name="chevron-down"
+                              class="shrink-0 text-prode-muted transition-transform duration-200"
+                              [class.rotate-180]="isDayExpanded(group.dateKey)"
+                              [size]="18"
+                            />
                           </button>
-                          @if (!isMatchPending(m)) {
-                            <button
-                              type="button"
-                              (click)="finalizeMatch(m)"
-                              [disabled]="finalizingId() === m.id"
-                              class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+
+                          @if (isDayExpanded(group.dateKey)) {
+                            <ul
+                              class="space-y-2 border-t border-prode-border/60 px-1.5 pb-1.5 pt-1.5 sm:px-2 sm:pb-2 sm:pt-2"
                             >
-                              @if (finalizingId() === m.id) {
-                                <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
+                              @for (m of group.items; track trackMatch($index, m)) {
+                                <li
+                                  class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30"
+                                >
+                                  <div class="flex items-start gap-2 p-2.5">
+                                    <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
+                                      <div
+                                        class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-white"
+                                      >
+                                        <span class="truncate">{{ m.homeTeam }}</span>
+                                        <span class="text-xs text-prode-muted">vs</span>
+                                        <span class="truncate">{{ m.awayTeam }}</span>
+                                      </div>
+                                      <p class="text-[10px] leading-tight text-prode-muted">
+                                        {{ formatMatchPhaseLabel(m.phase, m.groupCode) }}
+                                      </p>
+                                      <p
+                                        class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted"
+                                      >
+                                        <span>{{ formatWhen(m.date) }} hs (ARG)</span>
+                                        @if (isMatchFinalized(m)) {
+                                          <span
+                                            class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
+                                            >Finalizado</span
+                                          >
+                                        } @else if (isMatchPending(m)) {
+                                          <span
+                                            class="rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
+                                            >Pendiente</span
+                                          >
+                                        } @else {
+                                          <span
+                                            class="rounded-full border border-prode-accent/30 bg-prode-accent/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-200"
+                                            >Con resultado</span
+                                          >
+                                        }
+                                      </p>
+                                    </div>
+
+                                    <div class="relative z-10 flex shrink-0 items-end gap-1">
+                                      <label class="w-10">
+                                        <span
+                                          class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                                          >L</span
+                                        >
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          [disabled]="isMatchFinalized(m)"
+                                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                          [ngModel]="draft()[m.id]?.home ?? 0"
+                                          (ngModelChange)="onGoalsChange(m.id, 'home', $event)"
+                                        />
+                                      </label>
+                                      <span class="pb-1.5 text-xs font-bold text-prode-muted"
+                                        >—</span
+                                      >
+                                      <label class="w-10">
+                                        <span
+                                          class="mb-1 block text-[10px] font-bold uppercase text-prode-muted"
+                                          >V</span
+                                        >
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          [disabled]="isMatchFinalized(m)"
+                                          class="w-full rounded-lg border border-prode-border bg-prode-bg px-1 py-1 text-center text-sm font-bold text-white outline-none ring-amber-400/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                          [ngModel]="draft()[m.id]?.away ?? 0"
+                                          (ngModelChange)="onGoalsChange(m.id, 'away', $event)"
+                                        />
+                                      </label>
+                                      <div class="flex flex-col gap-1">
+                                        @if (!isMatchFinalized(m)) {
+                                          <button
+                                            type="button"
+                                            (click)="saveResult(m)"
+                                            [disabled]="savingId() === m.id"
+                                            class="mb-px inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-400 px-2 text-[10px] font-bold uppercase tracking-wide text-prode-bg shadow-md shadow-amber-900/25 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                                          >
+                                            @if (savingId() === m.id) {
+                                              <lucide-icon
+                                                name="loader-2"
+                                                class="animate-spin"
+                                                [size]="12"
+                                              />
+                                            }
+                                            @if (isMatchPending(m)) {
+                                              Cargar
+                                            } @else {
+                                              Act.
+                                            }
+                                          </button>
+                                          @if (!isMatchPending(m)) {
+                                            <button
+                                              type="button"
+                                              (click)="finalizeMatch(m)"
+                                              [disabled]="finalizingId() === m.id"
+                                              class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                              @if (finalizingId() === m.id) {
+                                                <lucide-icon
+                                                  name="loader-2"
+                                                  class="animate-spin"
+                                                  [size]="12"
+                                                />
+                                              }
+                                              Finalizar
+                                            </button>
+                                          }
+                                        } @else {
+                                          <button
+                                            type="button"
+                                            (click)="unfinalizeMatch(m)"
+                                            [disabled]="unfinalizingId() === m.id"
+                                            class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-400/40 bg-amber-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                                          >
+                                            @if (unfinalizingId() === m.id) {
+                                              <lucide-icon
+                                                name="loader-2"
+                                                class="animate-spin"
+                                                [size]="12"
+                                              />
+                                            }
+                                            Reabrir
+                                          </button>
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                  @if (isKnockoutMatch(m) && !isMatchFinalized(m)) {
+                                    <div class="border-t border-prode-border/60 px-2.5 py-2">
+                                      <p
+                                        class="mb-1 text-[10px] font-bold uppercase tracking-wider text-prode-muted"
+                                      >
+                                        Equipo que avanza
+                                        @if (isAdvancerLocked(m.id)) {
+                                          <span
+                                            class="ml-1 font-normal normal-case text-prode-muted/80"
+                                            >(según el marcador)</span
+                                          >
+                                        } @else {
+                                          <span
+                                            class="ml-1 font-normal normal-case text-amber-200/80"
+                                            >(empate: definir por penales)</span
+                                          >
+                                        }
+                                      </p>
+                                      <div class="grid grid-cols-2 gap-1.5">
+                                        <button
+                                          type="button"
+                                          (click)="setAdvancingTeam(m.id, 'HOME')"
+                                          [disabled]="isAdvancerLocked(m.id)"
+                                          [class]="advancerButtonClass(m.id, 'HOME')"
+                                        >
+                                          {{ m.homeTeam }}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          (click)="setAdvancingTeam(m.id, 'AWAY')"
+                                          [disabled]="isAdvancerLocked(m.id)"
+                                          [class]="advancerButtonClass(m.id, 'AWAY')"
+                                        >
+                                          {{ m.awayTeam }}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  }
+                                </li>
                               }
-                              Finalizar
-                            </button>
+                            </ul>
                           }
-                        } @else {
-                          <button
-                            type="button"
-                            (click)="unfinalizeMatch(m)"
-                            [disabled]="unfinalizingId() === m.id"
-                            class="inline-flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-400/40 bg-amber-500/15 px-2 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            @if (unfinalizingId() === m.id) {
-                              <lucide-icon name="loader-2" class="animate-spin" [size]="12" />
-                            }
-                            Reabrir
-                          </button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  @if (isKnockoutMatch(m) && !isMatchFinalized(m)) {
-                    <div class="border-t border-prode-border/60 px-2.5 py-2">
-                      <p class="mb-1 text-[10px] font-bold uppercase tracking-wider text-prode-muted">
-                        Equipo que avanza
-                        @if (isAdvancerLocked(m.id)) {
-                          <span class="ml-1 font-normal normal-case text-prode-muted/80">(según el marcador)</span>
-                        } @else {
-                          <span class="ml-1 font-normal normal-case text-amber-200/80">(empate: definir por penales)</span>
-                        }
-                      </p>
-                      <div class="grid grid-cols-2 gap-1.5">
-                        <button
-                          type="button"
-                          (click)="setAdvancingTeam(m.id, 'HOME')"
-                          [disabled]="isAdvancerLocked(m.id)"
-                          [class]="advancerButtonClass(m.id, 'HOME')"
-                        >
-                          {{ m.homeTeam }}
-                        </button>
-                        <button
-                          type="button"
-                          (click)="setAdvancingTeam(m.id, 'AWAY')"
-                          [disabled]="isAdvancerLocked(m.id)"
-                          [class]="advancerButtonClass(m.id, 'AWAY')"
-                        >
-                          {{ m.awayTeam }}
-                        </button>
-                      </div>
+                        </div>
+                      }
                     </div>
                   }
-                </li>
+                </div>
               }
-            </ul>
+            </div>
           }
         </div>
       }
@@ -282,9 +419,12 @@
   <div class="card-sport space-y-3 p-4">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.25em] text-prode-gold">Torneo</p>
-      <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">Campeón y goleador oficial</h3>
+      <h3 class="font-display text-lg tracking-wide text-white sm:text-xl">
+        Campeón y goleador oficial
+      </h3>
       <p class="mt-1 text-xs text-prode-muted">
-        Cada acierto suma 50 pts. La comparación ignora mayúsculas y tildes. Al guardar se recalcula el ranking.
+        Cada acierto suma 50 pts. La comparación ignora mayúsculas y tildes. Al guardar se recalcula
+        el ranking.
       </p>
     </div>
     <div class="grid gap-2.5 sm:grid-cols-2">

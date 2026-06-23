@@ -6,14 +6,20 @@ import {
   formatMatchPhaseLabel,
   isKnockoutPhase,
   MATCH_PHASE_LABELS,
+  type MatchPhase,
+  type MatchStage,
 } from '../../core/models/match-phase';
 import type { Match, TeamSide } from '../../core/models/match.model';
 import {
-  fixtureGroupDateKey,
   fixtureGroupTodayDateKey,
   formatArgentinaMatchTime,
-  formatFixtureGroupDayHeading,
 } from '../../core/utils/argentina-datetime';
+import {
+  buildFixtureTree,
+  resolveActivePath,
+  type FixtureJornadaNode,
+  type FixtureStageNode,
+} from '../../core/utils/fixture-grouping';
 import { isMatchFinalized } from '../../core/utils/match-lifecycle';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -68,11 +74,11 @@ export class Admin {
   protected readonly resultMatches = computed(() =>
     [...this.matches()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   );
-  protected readonly groupedResultMatches = computed(() => this.buildResultGroups(this.resultMatches()));
+  protected readonly stages = computed(() => buildFixtureTree(this.resultMatches(), (m) => m));
+  protected readonly expandedStageKeys = signal<Set<MatchStage>>(new Set());
+  protected readonly expandedJornadaKeys = signal<Set<MatchPhase>>(new Set());
   protected readonly expandedDayKeys = signal<Set<string>>(new Set());
-  private readonly matchById = computed(
-    () => new Map(this.matches().map((m) => [m.id, m])),
-  );
+  private readonly matchById = computed(() => new Map(this.matches().map((m) => [m.id, m])));
 
   protected readonly pendingCount = computed(() => this.matches().filter(isMatchPending).length);
 
@@ -91,7 +97,7 @@ export class Admin {
     this.matchesApi.getMatches().subscribe({
       next: (matches) => {
         this.matches.set(matches);
-        this.initDayExpansion(matches);
+        this.initExpansion(matches);
         const draft: Record<
           number,
           { home: number; away: number; advancingTeam: TeamSide | null }
@@ -126,6 +132,14 @@ export class Admin {
     return m.id;
   }
 
+  trackStage(_: number, s: FixtureStageNode<Match>): string {
+    return s.stage;
+  }
+
+  trackJornada(_: number, j: FixtureJornadaNode<Match>): string {
+    return j.phase;
+  }
+
   trackDay(_: number, group: { dateKey: string }): string {
     return group.dateKey;
   }
@@ -134,8 +148,30 @@ export class Admin {
     return formatArgentinaMatchTime(iso);
   }
 
-  matchCountForDay(group: { matches: Match[] }): number {
-    return group.matches.length;
+  isStageExpanded(stage: MatchStage): boolean {
+    return this.expandedStageKeys().has(stage);
+  }
+
+  toggleStage(stage: MatchStage): void {
+    this.expandedStageKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(stage)) next.delete(stage);
+      else next.add(stage);
+      return next;
+    });
+  }
+
+  isJornadaExpanded(phase: MatchPhase): boolean {
+    return this.expandedJornadaKeys().has(phase);
+  }
+
+  toggleJornada(phase: MatchPhase): void {
+    this.expandedJornadaKeys.update((keys) => {
+      const next = new Set(keys);
+      if (next.has(phase)) next.delete(phase);
+      else next.add(phase);
+      return next;
+    });
   }
 
   isDayExpanded(dateKey: string): boolean {
@@ -144,6 +180,16 @@ export class Admin {
 
   isTodayDay(dateKey: string): boolean {
     return dateKey === fixtureGroupTodayDateKey();
+  }
+
+  stageHasToday(stage: FixtureStageNode<Match>): boolean {
+    const today = fixtureGroupTodayDateKey();
+    return stage.jornadas.some((j) => j.days.some((d) => d.dateKey === today));
+  }
+
+  jornadaHasToday(jornada: FixtureJornadaNode<Match>): boolean {
+    const today = fixtureGroupTodayDateKey();
+    return jornada.days.some((d) => d.dateKey === today);
   }
 
   toggleDay(dateKey: string): void {
@@ -218,8 +264,7 @@ export class Admin {
 
     let winnerSide: TeamSide | undefined;
     if (isKnockoutPhase(match.phase)) {
-      const derived =
-        d.home > d.away ? 'HOME' : d.away > d.home ? 'AWAY' : d.advancingTeam;
+      const derived = d.home > d.away ? 'HOME' : d.away > d.home ? 'AWAY' : d.advancingTeam;
       if (!derived) {
         this.toast.error('Elegí qué equipo avanza antes de guardar.');
         return;
@@ -235,38 +280,38 @@ export class Admin {
         ...(winnerSide ? { winnerSide } : {}),
       })
       .subscribe({
-      next: (res) => {
-        this.matches.update((list) =>
-          list.map((m) =>
-            m.id === match.id
-              ? {
-                  ...m,
-                  homeGoals: d.home,
-                  awayGoals: d.away,
-                  winnerSide: winnerSide ?? m.winnerSide,
-                  resultSource: 'ADMIN',
-                }
-              : m,
-          ),
-        );
-        this.draft.update((current) => ({
-          ...current,
-          [match.id]: {
-            home: d.home,
-            away: d.away,
-            advancingTeam: winnerSide ?? d.advancingTeam,
-          },
-        }));
-        this.savingId.set(null);
-        this.refreshSyncStatus();
-        this.toast.success(
-          `Resultado guardado. Recalculadas ${res.recalculatedPredictions} predicciones.`,
-        );
-      },
-      error: () => {
-        this.savingId.set(null);
-      },
-    });
+        next: (res) => {
+          this.matches.update((list) =>
+            list.map((m) =>
+              m.id === match.id
+                ? {
+                    ...m,
+                    homeGoals: d.home,
+                    awayGoals: d.away,
+                    winnerSide: winnerSide ?? m.winnerSide,
+                    resultSource: 'ADMIN',
+                  }
+                : m,
+            ),
+          );
+          this.draft.update((current) => ({
+            ...current,
+            [match.id]: {
+              home: d.home,
+              away: d.away,
+              advancingTeam: winnerSide ?? d.advancingTeam,
+            },
+          }));
+          this.savingId.set(null);
+          this.refreshSyncStatus();
+          this.toast.success(
+            `Resultado guardado. Recalculadas ${res.recalculatedPredictions} predicciones.`,
+          );
+        },
+        error: () => {
+          this.savingId.set(null);
+        },
+      });
   }
 
   importFixture(): void {
@@ -395,25 +440,17 @@ export class Admin {
       });
   }
 
-  private initDayExpansion(matches: Match[]): void {
-    const groups = this.buildResultGroups(matches);
-    const today = fixtureGroupTodayDateKey();
-    const dayKeys = new Set(groups.map((group) => group.dateKey));
-    this.expandedDayKeys.set(dayKeys.has(today) ? new Set([today]) : new Set(dayKeys.size ? [groups[0].dateKey] : []));
-  }
-
-  private buildResultGroups(matches: Match[]): Array<{ dateKey: string; heading: string; matches: Match[] }> {
-    const byDate = new Map<string, Match[]>();
-    for (const match of matches) {
-      const dateKey = fixtureGroupDateKey(match.date);
-      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-      byDate.get(dateKey)!.push(match);
+  private initExpansion(matches: Match[]): void {
+    const stages = buildFixtureTree(matches, (m) => m);
+    const path = resolveActivePath(stages, fixtureGroupTodayDateKey());
+    if (!path) {
+      this.expandedStageKeys.set(new Set());
+      this.expandedJornadaKeys.set(new Set());
+      this.expandedDayKeys.set(new Set());
+      return;
     }
-    const groups = Array.from(byDate.entries()).map(([dateKey, groupMatches]) => ({
-      dateKey,
-      heading: formatFixtureGroupDayHeading(dateKey),
-      matches: groupMatches.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    }));
-    return groups.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    this.expandedStageKeys.set(new Set([path.stage]));
+    this.expandedJornadaKeys.set(new Set([path.phase]));
+    this.expandedDayKeys.set(new Set([path.dateKey]));
   }
 }

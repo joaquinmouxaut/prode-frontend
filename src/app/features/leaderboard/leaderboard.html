@@ -2,10 +2,12 @@
   <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div class="min-w-0">
       <p class="eyebrow text-prode-gold">Ranking</p>
-      <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">Tabla de posiciones</h2>
+      <h2 class="font-display text-2xl tracking-wide text-stone-100 sm:text-3xl">
+        Tabla de posiciones
+      </h2>
       <p class="mt-0.5 max-w-xl text-sm text-prode-muted">
-        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un encabezado para ordenar y un
-        jugador para ver su historial. Ver <a routerLink="/reglas" class="text-link">reglas</a>.
+        Puntos totales: partidos + campeón/goleador (50 pts c/u). Tocá un encabezado para ordenar y
+        un jugador para ver su historial. Ver <a routerLink="/reglas" class="text-link">reglas</a>.
       </p>
     </div>
     <button
@@ -29,9 +31,13 @@
     <div class="card-sport p-8 text-center text-prode-muted">Todavía no hay usuarios o puntos.</div>
   } @else {
     <div class="card-sport overflow-x-auto">
-      <table class="leaderboard-table w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm">
+      <table
+        class="leaderboard-table w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm"
+      >
         <thead>
-          <tr class="border-b border-prode-border text-[10px] uppercase tracking-wider text-prode-muted md:text-xs">
+          <tr
+            class="border-b border-prode-border text-[10px] uppercase tracking-wider text-prode-muted md:text-xs"
+          >
             <th class="px-1.5 py-1.5 font-semibold md:px-4 md:py-3">Jugador</th>
             @if (tournamentPicksVisible()) {
               <th class="hidden px-4 py-3 font-semibold lg:table-cell">Prode inicial</th>
@@ -53,7 +59,10 @@
                 />
               </button>
             </th>
-            <th class="grp grp-first px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 1">
+            <th
+              class="grp grp-first px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
+              title="Grupos — Jornada 1"
+            >
               <button
                 type="button"
                 (click)="setSort('g1')"
@@ -70,7 +79,10 @@
                 />
               </button>
             </th>
-            <th class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 2">
+            <th
+              class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
+              title="Grupos — Jornada 2"
+            >
               <button
                 type="button"
                 (click)="setSort('g2')"
@@ -87,7 +99,10 @@
                 />
               </button>
             </th>
-            <th class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3" title="Grupos — Jornada 3">
+            <th
+              class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
+              title="Grupos — Jornada 3"
+            >
               <button
                 type="button"
                 (click)="setSort('g3')"
@@ -181,20 +196,20 @@
                     <lucide-icon name="users" class="shrink-0 text-prode-muted" [size]="14" />
                   }
                   <div class="min-w-0 leading-tight">
-                    <p class="truncate font-medium text-white">
+                    <div class="flex min-w-0 items-center gap-1.5">
                       <a
                         [routerLink]="['/participantes', row.user.id]"
-                        class="text-link text-white hover:text-prode-accent"
+                        class="text-link truncate font-medium text-white hover:text-prode-accent"
                       >
                         {{ row.user.name }}
                       </a>
                       @if (isMe(row)) {
                         <span
-                          class="ml-1.5 rounded bg-prode-accent/20 px-1.5 py-px text-[9px] font-bold uppercase text-prode-accent md:ml-2 md:px-2 md:py-0.5 md:text-[10px]"
+                          class="shrink-0 rounded bg-prode-accent/20 px-1.5 py-px text-[9px] font-bold uppercase text-prode-accent md:px-2 md:py-0.5 md:text-[10px]"
                           >Vos</span
                         >
                       }
-                    </p>
+                    </div>
                     <p
                       class="flex items-center gap-1 text-[9px] font-semibold uppercase leading-none tracking-wide md:text-[10px]"
                       [class.text-prode-gold]="acc.tone === 'winner'"
@@ -218,7 +233,9 @@
                   </p>
                 </td>
               }
-              <td class="px-1.5 py-1.5 text-right font-display text-sm text-prode-gold md:px-4 md:py-3 md:text-xl">
+              <td
+                class="px-1.5 py-1.5 text-right font-display text-sm text-prode-gold md:px-4 md:py-3 md:text-xl"
+              >
                 {{ row.total }}
               </td>
               <td class="grp grp-first px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
@@ -230,7 +247,9 @@
               <td class="grp px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
                 {{ groupPoints(row, 'GROUPS_3') }}
               </td>
-              <td class="grp grp-last px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3">
+              <td
+                class="grp grp-last px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3"
+              >
                 {{ row.groupsPoints }}
               </td>
               <td class="px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3">

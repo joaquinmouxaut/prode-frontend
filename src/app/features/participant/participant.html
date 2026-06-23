@@ -28,8 +28,12 @@
             </h2>
           </div>
           <div class="text-left sm:text-right">
-            <p class="font-display text-3xl leading-none text-prode-gold sm:text-4xl">{{ p.total }}</p>
-            <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">pts totales</p>
+            <p class="font-display text-3xl leading-none text-prode-gold sm:text-4xl">
+              {{ p.total }}
+            </p>
+            <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
+              pts totales
+            </p>
           </div>
         </div>
 
@@ -58,15 +62,23 @@
         @if (p.tournamentPicksVisible) {
           <dl class="mt-3 grid gap-2.5 sm:grid-cols-2">
             <div class="rounded-lg border border-prode-border bg-prode-bg/60 px-3 py-2.5">
-              <dt class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">Campeón</dt>
-              <dd class="mt-0.5 text-base font-semibold text-white sm:text-lg">{{ p.championPick || '—' }}</dd>
+              <dt class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
+                Campeón
+              </dt>
+              <dd class="mt-0.5 text-base font-semibold text-white sm:text-lg">
+                {{ p.championPick || '—' }}
+              </dd>
               @if (p.championPoints > 0) {
                 <p class="mt-1 text-xs text-prode-gold">+{{ p.championPoints }} pts</p>
               }
             </div>
             <div class="rounded-lg border border-prode-border bg-prode-bg/60 px-3 py-2.5">
-              <dt class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">Goleador</dt>
-              <dd class="mt-0.5 text-base font-semibold text-white sm:text-lg">{{ p.topScorerPick || '—' }}</dd>
+              <dt class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
+                Goleador
+              </dt>
+              <dd class="mt-0.5 text-base font-semibold text-white sm:text-lg">
+                {{ p.topScorerPick || '—' }}
+              </dd>
               @if (p.topScorerPoints > 0) {
                 <p class="mt-1 text-xs text-prode-gold">+{{ p.topScorerPoints }} pts</p>
               }
@@ -87,28 +99,40 @@
           </p>
         </div>
 
-        @if (groupedMatchEntries().length === 0) {
+        @if (stages().length === 0) {
           <div class="card-sport p-6 text-center text-prode-muted">
             Todavía no hay partidos iniciados visibles para este participante.
           </div>
         } @else {
-          <div class="space-y-3">
-            @for (group of groupedMatchEntries(); track trackMatchDay($index, group)) {
-              <div class="fixture-day-group card-sport overflow-hidden" [id]="'participant-day-' + group.dateKey">
+          <div class="space-y-4">
+            @for (stage of stages(); track trackStage($index, stage)) {
+              <div
+                class="card-sport overflow-hidden border-l-4"
+                [class.border-l-prode-blue]="stage.stage === 'GROUPS'"
+                [class.border-l-prode-accent]="stage.stage === 'KNOCKOUT'"
+              >
                 <button
                   type="button"
-                  (click)="toggleDay(group.dateKey)"
-                  class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-prode-bg/40"
-                  [attr.aria-expanded]="isDayExpanded(group.dateKey)"
+                  (click)="toggleStage(stage.stage)"
+                  class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-prode-elevated/40"
+                  [attr.aria-expanded]="isStageExpanded(stage.stage)"
                 >
-                  <lucide-icon name="calendar" class="shrink-0 text-prode-blue" [size]="16" />
+                  <lucide-icon
+                    [name]="stage.stage === 'GROUPS' ? 'layout-grid' : 'trophy'"
+                    class="shrink-0"
+                    [class.text-prode-blue]="stage.stage === 'GROUPS'"
+                    [class.text-prode-accent]="stage.stage === 'KNOCKOUT'"
+                    [size]="18"
+                  />
                   <span class="min-w-0 flex-1">
-                    <span class="font-display text-base capitalize tracking-wide text-white sm:text-lg">
-                      {{ group.heading }}
+                    <span class="font-display text-base tracking-wide text-white sm:text-lg">
+                      {{ stage.label }}
                     </span>
-                    <span class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted">
-                      {{ matchCountForDay(group) }} partidos
-                      @if (isTodayDay(group.dateKey)) {
+                    <span
+                      class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+                    >
+                      {{ stage.count }} partidos
+                      @if (stageHasToday(stage)) {
                         <span class="text-prode-accent">· Hoy</span>
                       }
                     </span>
@@ -116,68 +140,191 @@
                   <lucide-icon
                     name="chevron-down"
                     class="shrink-0 text-prode-muted transition-transform duration-200"
-                    [class.rotate-180]="isDayExpanded(group.dateKey)"
-                    [size]="18"
+                    [class.rotate-180]="isStageExpanded(stage.stage)"
+                    [size]="20"
                   />
                 </button>
 
-                @if (isDayExpanded(group.dateKey)) {
-                  <ul class="space-y-2 border-t border-prode-border/60 px-2 pb-2 pt-2">
-                    @for (entry of group.entries; track entry.match.id) {
-                      <li class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30">
-                        <div class="flex items-start gap-2 p-2.5">
-                          <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
-                            <div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                              <p class="text-sm font-semibold text-white">
-                                {{ entry.match.homeTeam }}
-                                <span class="text-xs text-prode-muted">vs</span>
-                                {{ entry.match.awayTeam }}
-                              </p>
-                              @if (isMatchInProgress(entry.match)) {
-                                <span
-                                  class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
+                @if (isStageExpanded(stage.stage)) {
+                  <div
+                    class="space-y-1.5 border-t border-prode-border/60 p-1.5 sm:space-y-2 sm:p-2.5"
+                  >
+                    @for (jor of stage.jornadas; track trackJornada($index, jor)) {
+                      <div
+                        class="overflow-hidden rounded-lg border border-prode-border/60 bg-prode-bg/40"
+                      >
+                        <button
+                          type="button"
+                          (click)="toggleJornada(jor.phase)"
+                          class="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors hover:bg-prode-bg/60"
+                          [attr.aria-expanded]="isJornadaExpanded(jor.phase)"
+                        >
+                          <span
+                            class="h-1.5 w-1.5 shrink-0 rounded-full"
+                            [class.bg-prode-blue]="stage.stage === 'GROUPS'"
+                            [class.bg-prode-accent]="stage.stage === 'KNOCKOUT'"
+                          ></span>
+                          <span class="min-w-0 flex-1">
+                            <span class="text-sm font-bold tracking-wide text-stone-100">{{
+                              jor.label
+                            }}</span>
+                            <span
+                              class="ml-2 text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+                            >
+                              {{ jor.count }} partidos
+                              @if (jornadaHasToday(jor)) {
+                                <span class="text-prode-accent">· Hoy</span>
+                              }
+                            </span>
+                          </span>
+                          <lucide-icon
+                            name="chevron-down"
+                            class="shrink-0 text-prode-muted transition-transform duration-200"
+                            [class.rotate-180]="isJornadaExpanded(jor.phase)"
+                            [size]="16"
+                          />
+                        </button>
+
+                        @if (isJornadaExpanded(jor.phase)) {
+                          <div
+                            class="space-y-1.5 border-t border-prode-border/50 p-1.5 sm:space-y-2 sm:p-2.5"
+                          >
+                            @for (group of jor.days; track trackMatchDay($index, group)) {
+                              <div
+                                class="fixture-day-group overflow-hidden rounded-lg border border-prode-border/70 bg-prode-surface/70"
+                                [id]="'participant-day-' + group.dateKey"
+                              >
+                                <button
+                                  type="button"
+                                  (click)="toggleDay(group.dateKey)"
+                                  class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-prode-bg/40"
+                                  [attr.aria-expanded]="isDayExpanded(group.dateKey)"
                                 >
-                                  <span class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"></span>
-                                  En curso
-                                </span>
-                              }
-                              @if (isMatchApiFinished(entry.match)) {
-                                <span class="text-xs text-emerald-300/90">Final</span>
-                              }
-                            </div>
-                            <p class="text-[10px] leading-tight text-prode-muted">
-                              {{ formatMatchPhaseLabel(entry.match.phase, entry.match.groupCode) }}
-                            </p>
-                            <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted">
-                              <span>{{ formatWhen(entry.match.date) }} hs (ARG)</span>
-                              @if (hasScoreableResult(entry.match)) {
-                                <span class="font-semibold text-prode-accent">· {{ formatMatchScore(entry.match) }}</span>
-                              }
-                            </p>
-                          </div>
-                          <div class="relative z-10 flex shrink-0 flex-col items-end text-right">
-                            <p class="text-[10px] font-bold uppercase tracking-wide text-prode-muted">
-                              Predicción
-                            </p>
-                            @if (entry.prediction; as prediction) {
-                              <p class="font-display text-lg font-bold leading-tight text-white">
-                                {{ prediction.homeGoals }} — {{ prediction.awayGoals }}
-                              </p>
-                              @if (
-                                hasScoreableResult(entry.match) &&
-                                prediction.points !== null &&
-                                prediction.points !== undefined
-                              ) {
-                                <p class="text-xs font-bold text-prode-gold">+{{ prediction.points }} pts</p>
-                              }
-                            } @else {
-                              <p class="text-sm italic text-prode-muted">Sin predicción</p>
+                                  <lucide-icon
+                                    name="calendar"
+                                    class="shrink-0 text-prode-blue"
+                                    [size]="16"
+                                  />
+                                  <span class="min-w-0 flex-1">
+                                    <span
+                                      class="font-display text-base capitalize tracking-wide text-white sm:text-lg"
+                                    >
+                                      {{ group.heading }}
+                                    </span>
+                                    <span
+                                      class="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-prode-muted"
+                                    >
+                                      {{ group.items.length }} partidos
+                                      @if (isTodayDay(group.dateKey)) {
+                                        <span class="text-prode-accent">· Hoy</span>
+                                      }
+                                    </span>
+                                  </span>
+                                  <lucide-icon
+                                    name="chevron-down"
+                                    class="shrink-0 text-prode-muted transition-transform duration-200"
+                                    [class.rotate-180]="isDayExpanded(group.dateKey)"
+                                    [size]="18"
+                                  />
+                                </button>
+
+                                @if (isDayExpanded(group.dateKey)) {
+                                  <ul
+                                    class="space-y-2 border-t border-prode-border/60 px-1.5 pb-1.5 pt-1.5 sm:px-2 sm:pb-2 sm:pt-2"
+                                  >
+                                    @for (entry of group.items; track entry.match.id) {
+                                      <li
+                                        class="overflow-hidden rounded-lg border border-prode-border/70 bg-prode-bg/30"
+                                      >
+                                        <div class="flex items-start gap-2 p-2.5">
+                                          <div class="min-w-0 flex-1 space-y-0.5 overflow-hidden">
+                                            <div
+                                              class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5"
+                                            >
+                                              <p class="text-sm font-semibold text-white">
+                                                {{ entry.match.homeTeam }}
+                                                <span class="text-xs text-prode-muted">vs</span>
+                                                {{ entry.match.awayTeam }}
+                                              </p>
+                                              @if (isMatchInProgress(entry.match)) {
+                                                <span
+                                                  class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-200"
+                                                >
+                                                  <span
+                                                    class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"
+                                                  ></span>
+                                                  En curso
+                                                </span>
+                                              }
+                                              @if (isMatchApiFinished(entry.match)) {
+                                                <span class="text-xs text-emerald-300/90"
+                                                  >Final</span
+                                                >
+                                              }
+                                            </div>
+                                            <p class="text-[10px] leading-tight text-prode-muted">
+                                              {{
+                                                formatMatchPhaseLabel(
+                                                  entry.match.phase,
+                                                  entry.match.groupCode
+                                                )
+                                              }}
+                                            </p>
+                                            <p
+                                              class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight text-prode-muted"
+                                            >
+                                              <span
+                                                >{{ formatWhen(entry.match.date) }} hs (ARG)</span
+                                              >
+                                              @if (hasScoreableResult(entry.match)) {
+                                                <span class="font-semibold text-prode-accent"
+                                                  >· {{ formatMatchScore(entry.match) }}</span
+                                                >
+                                              }
+                                            </p>
+                                          </div>
+                                          <div
+                                            class="relative z-10 flex shrink-0 flex-col items-end text-right"
+                                          >
+                                            <p
+                                              class="text-[10px] font-bold uppercase tracking-wide text-prode-muted"
+                                            >
+                                              Predicción
+                                            </p>
+                                            @if (entry.prediction; as prediction) {
+                                              <p
+                                                class="font-display text-lg font-bold leading-tight text-white"
+                                              >
+                                                {{ prediction.homeGoals }} —
+                                                {{ prediction.awayGoals }}
+                                              </p>
+                                              @if (
+                                                hasScoreableResult(entry.match) &&
+                                                prediction.points !== null &&
+                                                prediction.points !== undefined
+                                              ) {
+                                                <p class="text-xs font-bold text-prode-gold">
+                                                  +{{ prediction.points }} pts
+                                                </p>
+                                              }
+                                            } @else {
+                                              <p class="text-sm italic text-prode-muted">
+                                                Sin predicción
+                                              </p>
+                                            }
+                                          </div>
+                                        </div>
+                                      </li>
+                                    }
+                                  </ul>
+                                }
+                              </div>
                             }
                           </div>
-                        </div>
-                      </li>
+                        }
+                      </div>
                     }
-                  </ul>
+                  </div>
                 }
               </div>
             }

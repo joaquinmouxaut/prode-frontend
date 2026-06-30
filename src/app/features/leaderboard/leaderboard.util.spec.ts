@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LeaderboardRow } from '../../core/services/leaderboard.service';
-import { accoladeFor, rowMetric, sortLeaderboardRows } from './leaderboard.util';
+import { rowMetric, sortLeaderboardRows } from './leaderboard.util';
 
 function makeRow(
   overrides: Partial<LeaderboardRow> & { id: number; name: string },
@@ -32,9 +32,9 @@ describe('rowMetric', () => {
   });
 
   it('reads per-jornada group points', () => {
-    expect(rowMetric(row, 'g1')).toBe(4);
-    expect(rowMetric(row, 'g2')).toBe(5);
-    expect(rowMetric(row, 'g3')).toBe(3);
+    expect(rowMetric(row, 'GROUPS_1')).toBe(4);
+    expect(rowMetric(row, 'GROUPS_2')).toBe(5);
+    expect(rowMetric(row, 'GROUPS_3')).toBe(3);
   });
 
   it('sums bonus from champion and top scorer', () => {
@@ -42,7 +42,7 @@ describe('rowMetric', () => {
   });
 
   it('defaults missing phases to zero', () => {
-    expect(rowMetric(makeRow({ id: 2, name: 'Bea' }), 'g1')).toBe(0);
+    expect(rowMetric(makeRow({ id: 2, name: 'Bea' }), 'GROUPS_1')).toBe(0);
   });
 });
 
@@ -59,7 +59,7 @@ describe('sortLeaderboardRows', () => {
   });
 
   it('sorts by a jornada column', () => {
-    const sorted = sortLeaderboardRows(rows, 'g1', 'desc');
+    const sorted = sortLeaderboardRows(rows, 'GROUPS_1', 'desc');
     expect(sorted.map((r) => r.user.id)).toEqual([2, 1, 3]);
   });
 
@@ -71,30 +71,7 @@ describe('sortLeaderboardRows', () => {
 
   it('does not mutate the input array', () => {
     const snapshot = rows.map((r) => r.user.id);
-    sortLeaderboardRows(rows, 'g1', 'asc');
+    sortLeaderboardRows(rows, 'GROUPS_1', 'asc');
     expect(rows.map((r) => r.user.id)).toEqual(snapshot);
-  });
-});
-
-describe('accoladeFor', () => {
-  it('crowns the first place as winner', () => {
-    expect(accoladeFor(1, 10)).toEqual({ label: 'Ganador', tone: 'winner' });
-  });
-
-  it('labels losers from second place onward', () => {
-    expect(accoladeFor(2, 10)).toEqual({ label: 'Primer perdedor', tone: 'loser' });
-    expect(accoladeFor(3, 10)).toEqual({ label: 'Segundo perdedor', tone: 'loser' });
-  });
-
-  it('gives the last place the wooden spoon', () => {
-    expect(accoladeFor(10, 10)).toEqual({ label: 'Cuchara de madera', tone: 'last' });
-  });
-
-  it('falls back to a numeric ordinal beyond the named list', () => {
-    expect(accoladeFor(20, 30).label).toBe('19.º perdedor');
-  });
-
-  it('does not mark a lone winner as last', () => {
-    expect(accoladeFor(1, 1)).toEqual({ label: 'Ganador', tone: 'winner' });
   });
 });

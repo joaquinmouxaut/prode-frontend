@@ -15,6 +15,12 @@ export type MatchPhase = (typeof MATCH_PHASES)[number];
 
 export const GROUP_PHASES: ReadonlySet<MatchPhase> = new Set(['GROUPS_1', 'GROUPS_2', 'GROUPS_3']);
 
+export const GROUP_PHASE_LIST: readonly MatchPhase[] = ['GROUPS_1', 'GROUPS_2', 'GROUPS_3'];
+
+export const KNOCKOUT_PHASE_LIST: readonly MatchPhase[] = MATCH_PHASES.filter(
+  (phase) => !GROUP_PHASES.has(phase),
+);
+
 export function isKnockoutPhase(phase: MatchPhase): boolean {
   return !GROUP_PHASES.has(phase);
 }
@@ -43,6 +49,19 @@ export function formatJornadaLabel(phase: MatchPhase): string {
   }
   return MATCH_PHASE_LABELS[phase];
 }
+
+/** Etiquetas cortas para columnas de ranking (J1, 8av, etc.). */
+export const MATCH_PHASE_SHORT_LABELS: Record<MatchPhase, string> = {
+  GROUPS_1: 'J1',
+  GROUPS_2: 'J2',
+  GROUPS_3: 'J3',
+  ROUND_OF_32: '16av',
+  ROUND_OF_16: '8av',
+  QUARTER_FINAL: '4tos',
+  SEMI_FINAL: 'SF',
+  THIRD_PLACE: '3°',
+  FINAL: 'F',
+};
 
 export const MATCH_PHASE_LABELS: Record<MatchPhase, string> = {
   GROUPS_1: 'Grupos — Jornada 1',

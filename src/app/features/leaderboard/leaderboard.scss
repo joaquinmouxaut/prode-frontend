@@ -1,4 +1,8 @@
 .leaderboard-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;
+
   th,
   td {
     white-space: nowrap;
@@ -6,26 +10,61 @@
 
   td:first-child {
     white-space: normal;
+    width: 5.5rem;
     min-width: 5.5rem;
     max-width: 8rem;
   }
 
   @media (min-width: 640px) {
     td:first-child {
+      width: auto;
+      min-width: 7rem;
       max-width: 14rem;
     }
   }
 
-  // Bloque de columnas de la fase de grupos (J1/J2/J3 + total).
-  .grp {
+  .col-total,
+  .col-section,
+  .col-detail,
+  .col-bonus {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .col-total {
+    width: 2.5rem;
+    padding-inline: 0.25rem;
+    padding-right: 0.625rem;
+  }
+
+  .col-section {
+    width: 4.25rem;
+    padding-inline: 0.25rem;
+  }
+
+  .col-detail {
+    width: 2.125rem;
+    padding-inline: 0.125rem;
+    font-size: 0.625rem;
+    letter-spacing: -0.02em;
+  }
+
+  .col-bonus {
+    width: 2.75rem;
+    padding-inline: 0.25rem;
+  }
+
+  // Bloques de desglose (eliminatorias y grupos).
+  .phase-block {
     background-color: rgb(255 255 255 / 2.5%);
   }
 
-  .grp-first {
+  .phase-block-first {
     border-left: 1px solid rgb(255 255 255 / 8%);
+    padding-left: 0.625rem;
   }
 
-  .grp-last {
+  .phase-block-last {
     border-right: 1px solid rgb(255 255 255 / 8%);
+    padding-right: 0.625rem;
   }
 }

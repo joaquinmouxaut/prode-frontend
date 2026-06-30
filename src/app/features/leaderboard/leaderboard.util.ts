@@ -1,8 +1,20 @@
 import type { LeaderboardRow } from '../../core/services/leaderboard.service';
+import type { MatchPhase } from '../../core/models/match-phase';
+import { MATCH_PHASES } from '../../core/models/match-phase';
 
 /** Columnas por las que se puede ordenar la tabla de posiciones. */
-export type SortKey = 'total' | 'bonus' | 'g1' | 'g2' | 'g3' | 'groups' | 'knockout';
+export type SortKey =
+  | 'total'
+  | 'bonus'
+  | 'groups'
+  | 'knockout'
+  | MatchPhase;
+
 export type SortDir = 'asc' | 'desc';
+
+function isMatchPhase(key: SortKey): key is MatchPhase {
+  return (MATCH_PHASES as readonly string[]).includes(key);
+}
 
 /** Valor numérico de una fila para una columna ordenable. */
 export function rowMetric(row: LeaderboardRow, key: SortKey): number {
@@ -11,16 +23,15 @@ export function rowMetric(row: LeaderboardRow, key: SortKey): number {
       return row.total;
     case 'bonus':
       return row.championPoints + row.topScorerPoints;
-    case 'g1':
-      return row.byPhase['GROUPS_1'] ?? 0;
-    case 'g2':
-      return row.byPhase['GROUPS_2'] ?? 0;
-    case 'g3':
-      return row.byPhase['GROUPS_3'] ?? 0;
     case 'groups':
       return row.groupsPoints;
     case 'knockout':
       return row.knockoutPoints;
+    default:
+      if (isMatchPhase(key)) {
+        return row.byPhase[key] ?? 0;
+      }
+      return 0;
   }
 }
 
@@ -45,46 +56,4 @@ export function sortLeaderboardRows(
     }
     return (baseRank.get(a.user.id) ?? 0) - (baseRank.get(b.user.id) ?? 0);
   });
-}
-
-export type AccoladeTone = 'winner' | 'loser' | 'last';
-
-export interface Accolade {
-  label: string;
-  tone: AccoladeTone;
-}
-
-const LOSER_ORDINALS = [
-  'Primer',
-  'Segundo',
-  'Tercer',
-  'Cuarto',
-  'Quinto',
-  'Sexto',
-  'Séptimo',
-  'Octavo',
-  'Noveno',
-  'Décimo',
-  'Undécimo',
-  'Duodécimo',
-  'Decimotercer',
-  'Decimocuarto',
-  'Decimoquinto',
-];
-
-/**
- * Etiqueta "de amigos": el primero es el Ganador y desde el segundo en
- * adelante son "Primer perdedor", "Segundo perdedor", etc. El último de la
- * tabla se marca además como "Farolito" (clásico del fútbol argentino).
- */
-export function accoladeFor(position: number, totalPlayers: number): Accolade {
-  if (position <= 1) {
-    return { label: 'Ganador', tone: 'winner' };
-  }
-  if (totalPlayers > 1 && position === totalPlayers) {
-    return { label: 'Cuchara de madera', tone: 'last' };
-  }
-  const loserIndex = position - 1;
-  const ordinal = LOSER_ORDINALS[loserIndex - 1] ?? `${loserIndex}.º`;
-  return { label: `${ordinal} perdedor`, tone: 'loser' };
 }

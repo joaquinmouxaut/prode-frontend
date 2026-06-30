@@ -4,9 +4,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 import { LeaderboardService, type LeaderboardRow } from '../../core/services/leaderboard.service';
 import {
-  accoladeFor,
+  GROUP_PHASE_LIST,
+  KNOCKOUT_PHASE_LIST,
+  MATCH_PHASE_LABELS,
+  MATCH_PHASE_SHORT_LABELS,
+  type MatchPhase,
+} from '../../core/models/match-phase';
+import {
   sortLeaderboardRows,
-  type Accolade,
   type SortDir,
   type SortKey,
 } from './leaderboard.util';
@@ -28,6 +33,14 @@ export class Leaderboard {
 
   protected readonly sortKey = signal<SortKey>('total');
   protected readonly sortDir = signal<SortDir>('desc');
+
+  protected readonly knockoutPhases = KNOCKOUT_PHASE_LIST;
+  protected readonly groupPhases = GROUP_PHASE_LIST;
+  protected readonly knockoutExpanded = signal(false);
+  protected readonly groupsExpanded = signal(false);
+
+  protected readonly phaseShortLabel = MATCH_PHASE_SHORT_LABELS;
+  protected readonly phaseFullLabel = MATCH_PHASE_LABELS;
 
   /** Posición canónica por puntaje total (orden del backend), id → posición 1-based. */
   private readonly positionById = computed(() => {
@@ -88,16 +101,22 @@ export class Leaderboard {
     return this.sortDir() === 'asc' ? 'chevron-up' : 'chevron-down';
   }
 
+  toggleKnockoutExpanded(event: MouseEvent): void {
+    event.stopPropagation();
+    this.knockoutExpanded.update((expanded) => !expanded);
+  }
+
+  toggleGroupsExpanded(event: MouseEvent): void {
+    event.stopPropagation();
+    this.groupsExpanded.update((expanded) => !expanded);
+  }
+
   /** Posición real (por puntaje total), independiente del orden visible. */
   position(row: LeaderboardRow): number {
     return this.positionById().get(row.user.id) ?? 0;
   }
 
-  accolade(row: LeaderboardRow): Accolade {
-    return accoladeFor(this.position(row), this.rows().length);
-  }
-
-  groupPoints(row: LeaderboardRow, phase: 'GROUPS_1' | 'GROUPS_2' | 'GROUPS_3'): number {
+  phasePoints(row: LeaderboardRow, phase: MatchPhase): number {
     return row.byPhase[phase] ?? 0;
   }
 }

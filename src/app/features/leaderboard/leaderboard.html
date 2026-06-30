@@ -32,7 +32,7 @@
   } @else {
     <div class="card-sport overflow-x-auto">
       <table
-        class="leaderboard-table w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm"
+        class="leaderboard-table border-collapse text-left text-xs md:text-sm"
       >
         <thead>
           <tr
@@ -42,11 +42,11 @@
             @if (tournamentPicksVisible()) {
               <th class="hidden px-4 py-3 font-semibold lg:table-cell">Prode inicial</th>
             }
-            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+            <th class="col-total px-1 py-1.5 text-right font-semibold md:py-2">
               <button
                 type="button"
                 (click)="setSort('total')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                class="flex w-full items-center justify-end gap-0.5 hover:text-white"
                 [class.text-prode-gold]="isSorted('total')"
               >
                 Total
@@ -60,106 +60,140 @@
               </button>
             </th>
             <th
-              class="grp grp-first px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
-              title="Grupos — Jornada 1"
+              class="phase-block phase-block-first col-section px-1 py-1.5 text-right font-semibold md:py-2"
+              [class.phase-block-last]="!knockoutExpanded()"
             >
-              <button
-                type="button"
-                (click)="setSort('g1')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
-                [class.text-prode-gold]="isSorted('g1')"
-              >
-                J1
-                <lucide-icon
-                  [name]="sortIcon('g1')"
-                  [size]="12"
-                  [class.text-prode-gold]="isSorted('g1')"
-                  [class.text-prode-muted]="!isSorted('g1')"
-                  [class.opacity-40]="!isSorted('g1')"
-                />
-              </button>
-            </th>
-            <th
-              class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
-              title="Grupos — Jornada 2"
-            >
-              <button
-                type="button"
-                (click)="setSort('g2')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
-                [class.text-prode-gold]="isSorted('g2')"
-              >
-                J2
-                <lucide-icon
-                  [name]="sortIcon('g2')"
-                  [size]="12"
-                  [class.text-prode-gold]="isSorted('g2')"
-                  [class.text-prode-muted]="!isSorted('g2')"
-                  [class.opacity-40]="!isSorted('g2')"
-                />
-              </button>
-            </th>
-            <th
-              class="grp px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3"
-              title="Grupos — Jornada 3"
-            >
-              <button
-                type="button"
-                (click)="setSort('g3')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
-                [class.text-prode-gold]="isSorted('g3')"
-              >
-                J3
-                <lucide-icon
-                  [name]="sortIcon('g3')"
-                  [size]="12"
-                  [class.text-prode-gold]="isSorted('g3')"
-                  [class.text-prode-muted]="!isSorted('g3')"
-                  [class.opacity-40]="!isSorted('g3')"
-                />
-              </button>
-            </th>
-            <th class="grp grp-last px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
-              <button
-                type="button"
-                (click)="setSort('groups')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
-                [class.text-prode-gold]="isSorted('groups')"
-              >
-                <span class="lg:hidden">Gp.</span>
-                <span class="hidden lg:inline">Grupos</span>
-                <lucide-icon
-                  [name]="sortIcon('groups')"
-                  [size]="12"
-                  [class.text-prode-gold]="isSorted('groups')"
-                  [class.text-prode-muted]="!isSorted('groups')"
-                  [class.opacity-40]="!isSorted('groups')"
-                />
-              </button>
-            </th>
-            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
-              <button
-                type="button"
-                (click)="setSort('knockout')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
-                [class.text-prode-gold]="isSorted('knockout')"
-              >
-                <span class="lg:hidden">Elim.</span>
-                <span class="hidden lg:inline">Eliminatorias</span>
-                <lucide-icon
-                  [name]="sortIcon('knockout')"
-                  [size]="12"
+              <div class="flex items-center justify-end gap-0.5">
+                <button
+                  type="button"
+                  (click)="toggleKnockoutExpanded($event)"
+                  class="inline-flex shrink-0 items-center rounded p-0.5 text-prode-muted hover:bg-prode-elevated hover:text-white"
+                  [attr.aria-expanded]="knockoutExpanded()"
+                  [attr.aria-label]="
+                    knockoutExpanded()
+                      ? 'Ocultar desglose de eliminatorias'
+                      : 'Mostrar desglose de eliminatorias'
+                  "
+                  title="Desglose por ronda"
+                >
+                  <lucide-icon
+                    [name]="knockoutExpanded() ? 'chevron-left' : 'chevron-right'"
+                    [size]="12"
+                  />
+                </button>
+                <button
+                  type="button"
+                  (click)="setSort('knockout')"
+                  class="flex min-w-0 items-center justify-end gap-0.5 hover:text-white"
                   [class.text-prode-gold]="isSorted('knockout')"
-                  [class.text-prode-muted]="!isSorted('knockout')"
-                  [class.opacity-40]="!isSorted('knockout')"
-                />
-              </button>
+                  title="Eliminatorias"
+                >
+                  Elim.
+                  <lucide-icon
+                    [name]="sortIcon('knockout')"
+                    [size]="12"
+                    [class.text-prode-gold]="isSorted('knockout')"
+                    [class.text-prode-muted]="!isSorted('knockout')"
+                    [class.opacity-40]="!isSorted('knockout')"
+                  />
+                </button>
+              </div>
             </th>
-            <th class="px-1.5 py-1.5 text-right font-semibold md:px-4 md:py-3">
+            @if (knockoutExpanded()) {
+              @for (phase of knockoutPhases; track phase) {
+                <th
+                  class="phase-block col-detail px-0.5 py-1.5 text-right font-semibold md:py-2"
+                  [class.phase-block-last]="$last"
+                  [title]="phaseFullLabel[phase]"
+                >
+                  <button
+                    type="button"
+                    (click)="setSort(phase)"
+                    class="flex w-full items-center justify-end gap-0.5 hover:text-white"
+                    [class.text-prode-gold]="isSorted(phase)"
+                  >
+                    {{ phaseShortLabel[phase] }}
+                    @if (isSorted(phase)) {
+                      <lucide-icon
+                        [name]="sortIcon(phase)"
+                        [size]="10"
+                        class="text-prode-gold"
+                      />
+                    }
+                  </button>
+                </th>
+              }
+            }
+            <th
+              class="phase-block phase-block-first col-section px-1 py-1.5 text-right font-semibold md:py-2"
+              [class.phase-block-last]="!groupsExpanded()"
+            >
+              <div class="flex items-center justify-end gap-0.5">
+                <button
+                  type="button"
+                  (click)="toggleGroupsExpanded($event)"
+                  class="inline-flex shrink-0 items-center rounded p-0.5 text-prode-muted hover:bg-prode-elevated hover:text-white"
+                  [attr.aria-expanded]="groupsExpanded()"
+                  [attr.aria-label]="
+                    groupsExpanded()
+                      ? 'Ocultar desglose de grupos'
+                      : 'Mostrar desglose de grupos'
+                  "
+                  title="Desglose por jornada"
+                >
+                  <lucide-icon
+                    [name]="groupsExpanded() ? 'chevron-left' : 'chevron-right'"
+                    [size]="12"
+                  />
+                </button>
+                <button
+                  type="button"
+                  (click)="setSort('groups')"
+                  class="flex min-w-0 items-center justify-end gap-0.5 hover:text-white"
+                  [class.text-prode-gold]="isSorted('groups')"
+                  title="Grupos"
+                >
+                  Gp.
+                  <lucide-icon
+                    [name]="sortIcon('groups')"
+                    [size]="12"
+                    [class.text-prode-gold]="isSorted('groups')"
+                    [class.text-prode-muted]="!isSorted('groups')"
+                    [class.opacity-40]="!isSorted('groups')"
+                  />
+                </button>
+              </div>
+            </th>
+            @if (groupsExpanded()) {
+              @for (phase of groupPhases; track phase) {
+                <th
+                  class="phase-block col-detail px-0.5 py-1.5 text-right font-semibold md:py-2"
+                  [class.phase-block-last]="$last"
+                  [title]="phaseFullLabel[phase]"
+                >
+                  <button
+                    type="button"
+                    (click)="setSort(phase)"
+                    class="flex w-full items-center justify-end gap-0.5 hover:text-white"
+                    [class.text-prode-gold]="isSorted(phase)"
+                  >
+                    {{ phaseShortLabel[phase] }}
+                    @if (isSorted(phase)) {
+                      <lucide-icon
+                        [name]="sortIcon(phase)"
+                        [size]="10"
+                        class="text-prode-gold"
+                      />
+                    }
+                  </button>
+                </th>
+              }
+            }
+            <th class="col-bonus px-1 py-1.5 text-right font-semibold md:py-2">
               <button
                 type="button"
                 (click)="setSort('bonus')"
-                class="flex w-full items-center justify-end gap-1 hover:text-white"
+                class="flex w-full items-center justify-end gap-0.5 hover:text-white"
                 [class.text-prode-gold]="isSorted('bonus')"
               >
                 Bonus
@@ -177,7 +211,6 @@
         <tbody>
           @for (row of sortedRows(); track trackRow($index, row)) {
             @let pos = position(row);
-            @let acc = accolade(row);
             <tr
               class="border-b border-prode-border/60 transition hover:bg-prode-elevated/40"
               [class.bg-prode-accent/5]="isMe(row)"
@@ -190,34 +223,22 @@
                     <lucide-icon name="medal" class="shrink-0 text-slate-300" [size]="14" />
                   } @else if (pos === 3) {
                     <lucide-icon name="medal" class="shrink-0 text-amber-700" [size]="14" />
-                  } @else if (acc.tone === 'last') {
-                    <lucide-icon name="utensils" class="shrink-0 text-amber-300" [size]="14" />
                   } @else {
                     <lucide-icon name="users" class="shrink-0 text-prode-muted" [size]="14" />
                   }
-                  <div class="min-w-0 leading-tight">
-                    <div class="flex min-w-0 items-center gap-1.5">
-                      <a
-                        [routerLink]="['/participantes', row.user.id]"
-                        class="text-link truncate font-medium text-white hover:text-prode-accent"
-                      >
-                        {{ row.user.name }}
-                      </a>
-                      @if (isMe(row)) {
-                        <span
-                          class="shrink-0 rounded bg-prode-accent/20 px-1.5 py-px text-[9px] font-bold uppercase text-prode-accent md:px-2 md:py-0.5 md:text-[10px]"
-                          >Vos</span
-                        >
-                      }
-                    </div>
-                    <p
-                      class="flex items-center gap-1 text-[9px] font-semibold uppercase leading-none tracking-wide md:text-[10px]"
-                      [class.text-prode-gold]="acc.tone === 'winner'"
-                      [class.text-prode-muted]="acc.tone === 'loser'"
-                      [class.text-amber-300]="acc.tone === 'last'"
+                  <div class="flex min-w-0 items-center gap-1.5">
+                    <a
+                      [routerLink]="['/participantes', row.user.id]"
+                      class="text-link truncate font-medium text-white hover:text-prode-accent"
                     >
-                      {{ acc.label }}
-                    </p>
+                      {{ row.user.name }}
+                    </a>
+                    @if (isMe(row)) {
+                      <span
+                        class="shrink-0 rounded bg-prode-accent/20 px-1.5 py-px text-[9px] font-bold uppercase text-prode-accent md:px-2 md:py-0.5 md:text-[10px]"
+                        >Vos</span
+                      >
+                    }
                   </div>
                 </div>
               </td>
@@ -234,28 +255,43 @@
                 </td>
               }
               <td
-                class="px-1.5 py-1.5 text-right font-display text-sm text-prode-gold md:px-4 md:py-3 md:text-xl"
+                class="col-total px-1 py-1.5 text-right font-display text-sm text-prode-gold md:py-2 md:text-lg"
               >
                 {{ row.total }}
               </td>
-              <td class="grp grp-first px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
-                {{ groupPoints(row, 'GROUPS_1') }}
-              </td>
-              <td class="grp px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
-                {{ groupPoints(row, 'GROUPS_2') }}
-              </td>
-              <td class="grp px-1.5 py-1.5 text-right text-stone-300 md:px-4 md:py-3">
-                {{ groupPoints(row, 'GROUPS_3') }}
-              </td>
               <td
-                class="grp grp-last px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3"
+                class="phase-block phase-block-first col-section px-1 py-1.5 text-right font-semibold text-white md:py-2"
+                [class.phase-block-last]="!knockoutExpanded()"
+              >
+                {{ row.knockoutPoints }}
+              </td>
+              @if (knockoutExpanded()) {
+                @for (phase of knockoutPhases; track phase) {
+                  <td
+                    class="phase-block col-detail px-0.5 py-1.5 text-right text-stone-300 md:py-2"
+                    [class.phase-block-last]="$last"
+                  >
+                    {{ phasePoints(row, phase) }}
+                  </td>
+                }
+              }
+              <td
+                class="phase-block phase-block-first col-section px-1 py-1.5 text-right font-semibold text-white md:py-2"
+                [class.phase-block-last]="!groupsExpanded()"
               >
                 {{ row.groupsPoints }}
               </td>
-              <td class="px-1.5 py-1.5 text-right font-semibold text-white md:px-4 md:py-3">
-                {{ row.knockoutPoints }}
-              </td>
-              <td class="px-1.5 py-1.5 text-right font-semibold text-prode-gold md:px-4 md:py-3">
+              @if (groupsExpanded()) {
+                @for (phase of groupPhases; track phase) {
+                  <td
+                    class="phase-block col-detail px-0.5 py-1.5 text-right text-stone-300 md:py-2"
+                    [class.phase-block-last]="$last"
+                  >
+                    {{ phasePoints(row, phase) }}
+                  </td>
+                }
+              }
+              <td class="col-bonus px-1 py-1.5 text-right font-semibold text-prode-gold md:py-2">
                 @if (row.championPoints + row.topScorerPoints > 0) {
                   +{{ row.championPoints + row.topScorerPoints }}
                 } @else {

@@ -40,6 +40,7 @@ import {
   isMatchInProgress,
   isMatchStarted,
 } from '../../core/utils/match-lifecycle';
+import { penaltyWinnerName, predictionPenaltyWinnerName } from '../../core/utils/knockout-result';
 import { AppLucideIconsModule } from '../../shared/lucide-icons.module';
 
 interface ParticipantMatchEntry {
@@ -68,6 +69,8 @@ export class Participant {
   protected readonly hasScoreableResult = hasScoreableResult;
   protected readonly isMatchInProgress = isMatchInProgress;
   protected readonly isMatchApiFinished = isMatchApiFinished;
+  protected readonly penaltyWinnerName = penaltyWinnerName;
+  protected readonly predictionPenaltyWinnerName = predictionPenaltyWinnerName;
 
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);

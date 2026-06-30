@@ -45,6 +45,7 @@ import {
   isMatchInProgress,
   isMatchStarted,
 } from '../../core/utils/match-lifecycle';
+import { penaltyWinnerName, predictionPenaltyWinnerName } from '../../core/utils/knockout-result';
 
 interface GroupPredictionEntry {
   user: Pick<User, 'id' | 'name'>;
@@ -97,6 +98,8 @@ export class Fixture {
   protected readonly isMatchApiFinished = isMatchApiFinished;
   protected readonly hasScoreableResult = hasScoreableResult;
   protected readonly formatMatchScore = formatMatchScore;
+  protected readonly penaltyWinnerName = penaltyWinnerName;
+  protected readonly predictionPenaltyWinnerName = predictionPenaltyWinnerName;
 
   constructor() {
     this.refresh();
@@ -363,41 +366,6 @@ export class Fixture {
         }
       },
     });
-  }
-
-  /** Nombre del equipo que avanzó según el resultado oficial (mata-mata). */
-  advancerTeamName(match: Match): string | null {
-    if (!match.winnerSide) {
-      return null;
-    }
-    return match.winnerSide === 'HOME' ? match.homeTeam : match.awayTeam;
-  }
-
-  /** Nombre del equipo que el jugador eligió como avance. */
-  predictionAdvancerName(match: Match, prediction: Prediction): string | null {
-    const side =
-      prediction.advancingTeam ??
-      (prediction.homeGoals > prediction.awayGoals
-        ? 'HOME'
-        : prediction.awayGoals > prediction.homeGoals
-          ? 'AWAY'
-          : null);
-    if (!side) {
-      return null;
-    }
-    return side === 'HOME' ? match.homeTeam : match.awayTeam;
-  }
-
-  /** Etiqueta de cómo se definió el partido (prórroga/penales). */
-  decisionLabel(match: Match): string | null {
-    switch (match.decidedBy) {
-      case 'PENALTIES':
-        return 'penales';
-      case 'EXTRA_TIME':
-        return 'prórroga';
-      default:
-        return null;
-    }
   }
 
   groupPredictionEntriesForMatch(match: Match): GroupPredictionEntry[] {

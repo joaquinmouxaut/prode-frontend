@@ -280,6 +280,21 @@
                                                 <span class="font-semibold text-prode-accent"
                                                   >· {{ formatMatchScore(entry.match) }}</span
                                                 >
+                                                @if (penaltyWinnerName(entry.match); as winner) {
+                                                  <span class="text-prode-muted/80"
+                                                    >(pen.
+                                                    <span class="font-semibold text-stone-200">{{
+                                                      winner
+                                                    }}</span
+                                                    >)</span
+                                                  >
+                                                } @else if (
+                                                  entry.match.decidedBy === 'EXTRA_TIME'
+                                                ) {
+                                                  <span class="text-prode-muted/80"
+                                                    >(prórroga)</span
+                                                  >
+                                                }
                                               }
                                             </p>
                                           </div>
@@ -298,6 +313,23 @@
                                                 {{ prediction.homeGoals }} —
                                                 {{ prediction.awayGoals }}
                                               </p>
+                                              @if (
+                                                predictionPenaltyWinnerName(
+                                                  entry.match,
+                                                  prediction
+                                                );
+                                                as winner
+                                              ) {
+                                                <p
+                                                  class="text-[10px] leading-tight text-prode-muted/80"
+                                                >
+                                                  (pen.
+                                                  <span class="font-semibold text-stone-200">{{
+                                                    winner
+                                                  }}</span
+                                                  >)
+                                                </p>
+                                              }
                                               @if (
                                                 hasScoreableResult(entry.match) &&
                                                 prediction.points !== null &&

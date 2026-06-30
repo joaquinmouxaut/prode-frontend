@@ -21,6 +21,7 @@ import {
   type FixtureStageNode,
 } from '../../core/utils/fixture-grouping';
 import { isMatchFinalized } from '../../core/utils/match-lifecycle';
+import { penaltyWinnerName } from '../../core/utils/knockout-result';
 import { PredictionsService } from '../../core/services/predictions.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -84,6 +85,7 @@ export class Admin {
 
   protected readonly isMatchPending = isMatchPending;
   protected readonly isMatchFinalized = isMatchFinalized;
+  protected readonly penaltyWinnerName = penaltyWinnerName;
 
   constructor() {
     this.refresh();

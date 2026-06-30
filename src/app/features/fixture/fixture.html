@@ -223,6 +223,17 @@
                                             <span class="font-semibold text-prode-accent"
                                               >· {{ formatMatchScore(m) }}</span
                                             >
+                                            @if (penaltyWinnerName(m); as winner) {
+                                              <span class="text-prode-muted/80"
+                                                >(pen.
+                                                <span class="font-semibold text-stone-200">{{
+                                                  winner
+                                                }}</span
+                                                >)</span
+                                              >
+                                            } @else if (m.decidedBy === 'EXTRA_TIME') {
+                                              <span class="text-prode-muted/80">(prórroga)</span>
+                                            }
                                           }
                                         </p>
                                       </div>
@@ -300,59 +311,43 @@
                                       }
                                     </div>
 
-                                    @if (isKnockoutMatch(m)) {
-                                      @if (!isMatchStarted(m)) {
-                                        <div class="border-t border-prode-border/60 px-2.5 py-2">
-                                          <p
-                                            class="mb-1 text-[10px] font-bold uppercase tracking-wider text-prode-muted"
-                                          >
-                                            ¿Quién avanza?
-                                            @if (isAdvancerLocked(m.id)) {
-                                              <span
-                                                class="ml-1 font-normal normal-case text-prode-muted/80"
-                                                >(según tu marcador)</span
-                                              >
-                                            } @else {
-                                              <span
-                                                class="ml-1 font-normal normal-case text-amber-200/80"
-                                                >(empate: definí por penales)</span
-                                              >
-                                            }
-                                          </p>
-                                          <div class="grid grid-cols-2 gap-1.5">
-                                            <button
-                                              type="button"
-                                              (click)="setAdvancingTeam(m.id, 'HOME')"
-                                              [disabled]="isAdvancerLocked(m.id)"
-                                              [class]="advancerButtonClass(m.id, 'HOME')"
-                                            >
-                                              {{ m.homeTeam }}
-                                            </button>
-                                            <button
-                                              type="button"
-                                              (click)="setAdvancingTeam(m.id, 'AWAY')"
-                                              [disabled]="isAdvancerLocked(m.id)"
-                                              [class]="advancerButtonClass(m.id, 'AWAY')"
-                                            >
-                                              {{ m.awayTeam }}
-                                            </button>
-                                          </div>
-                                        </div>
-                                      } @else if (advancerTeamName(m); as advancer) {
-                                        <div
-                                          class="border-t border-prode-border/60 px-2.5 py-1.5 text-[10px] text-prode-muted"
+                                    @if (isKnockoutMatch(m) && !isMatchStarted(m)) {
+                                      <div class="border-t border-prode-border/60 px-2.5 py-2">
+                                        <p
+                                          class="mb-1 text-[10px] font-bold uppercase tracking-wider text-prode-muted"
                                         >
-                                          Avanza
-                                          <span class="font-bold text-emerald-300">{{
-                                            advancer
-                                          }}</span>
-                                          @if (decisionLabel(m); as decision) {
-                                            <span class="text-prode-muted/80">
-                                              por {{ decision }}</span
+                                          ¿Quién avanza?
+                                          @if (isAdvancerLocked(m.id)) {
+                                            <span
+                                              class="ml-1 font-normal normal-case text-prode-muted/80"
+                                              >(según tu marcador)</span
+                                            >
+                                          } @else {
+                                            <span
+                                              class="ml-1 font-normal normal-case text-amber-200/80"
+                                              >(empate: definí por penales)</span
                                             >
                                           }
+                                        </p>
+                                        <div class="grid grid-cols-2 gap-1.5">
+                                          <button
+                                            type="button"
+                                            (click)="setAdvancingTeam(m.id, 'HOME')"
+                                            [disabled]="isAdvancerLocked(m.id)"
+                                            [class]="advancerButtonClass(m.id, 'HOME')"
+                                          >
+                                            {{ m.homeTeam }}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            (click)="setAdvancingTeam(m.id, 'AWAY')"
+                                            [disabled]="isAdvancerLocked(m.id)"
+                                            [class]="advancerButtonClass(m.id, 'AWAY')"
+                                          >
+                                            {{ m.awayTeam }}
+                                          </button>
                                         </div>
-                                      }
+                                      </div>
                                     }
 
                                     @if (groupPredictionEntriesForMatch(m); as groupPredictions) {
@@ -396,13 +391,16 @@
                                                     <span class="shrink-0 font-bold text-stone-200">
                                                       {{ p.homeGoals }} — {{ p.awayGoals }}
                                                       @if (
-                                                        isKnockoutMatch(m) &&
-                                                          predictionAdvancerName(m, p);
-                                                        as advancer
+                                                        predictionPenaltyWinnerName(m, p);
+                                                        as winner
                                                       ) {
                                                         <span
-                                                          class="ml-1 font-normal text-prode-muted"
-                                                          >(av. {{ advancer }})</span
+                                                          class="ml-1 font-normal text-prode-muted/80"
+                                                          >(pen.
+                                                          <span
+                                                            class="font-semibold text-stone-200"
+                                                            >{{ winner }}</span
+                                                          >)</span
                                                         >
                                                       }
                                                       @if (
